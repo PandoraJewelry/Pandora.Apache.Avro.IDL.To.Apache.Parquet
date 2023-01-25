@@ -24,6 +24,10 @@ file). This will allow to merge both the **bronze** and **silver** layers, to
 make it easier for data engineers/scientists and business analysts to combine
 data with already known logic (`SQL joins`).
 
+| ![Azure Databricks notebook](docs/pictures/databricks-python-notebook-sql-cell.png) | 
+|:--:| 
+| Figure 2: Azure Databricks `python` notebook and `SQL` cell |
+
 As two of the **medallion layers** are being combined to a single, it might lead
 to the possible saving of a ⅓ in disk usage. Furthermore, since we aren't
 relying on a naive approach, when flattening and storing data, it could further
