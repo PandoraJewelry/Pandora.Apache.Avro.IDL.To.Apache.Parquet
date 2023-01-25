@@ -29,10 +29,10 @@ data with already known logic (`SQL joins`).
 | Figure 2: Azure Databricks `python` notebook and `SQL` cell |
 
 As two of the **medallion layers** are being combined to a single, it might lead
-to the possible saving of a ⅓ in disk usage. Furthermore, since we aren't
+to the possible **saving of a ⅓ in disk usage**. Furthermore, since we aren't
 relying on a naive approach, when flattening and storing data, it could further
-lead to greater savings and a more sustainable and environmentally friendly
-approach.
+lead to **greater savings** and a more **sustainable** and **environmentally
+friendly** approach.
 
 | ![Green Software Foundation](docs/pictures/5-25-image-green-goftware_sc_3.png) | 
 |:--:| 
