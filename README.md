@@ -31,7 +31,12 @@ data with already known logic (`SQL joins`).
 As two of the **medallion layers** are being combined to a single, it might lead
 to the possible saving of a ⅓ in disk usage. Furthermore, since we aren't
 relying on a naive approach, when flattening and storing data, it could further
-lead to greater savings.
+lead to greater savings and a more sustainable and environmentally friendly
+approach.
+
+| ![Green Software Foundation](docs/pictures/5-25-image-green-goftware_sc_3.png) | 
+|:--:| 
+| Figure 3: [Green Software Foundation][green-software-foundation] with the Linux Foundation to put sustainability at the core of software engineering |
 
 [apache-kafka]:                               https://kafka.apache.org/
 [azure-databricks]:                           https://azure.microsoft.com/en-us/products/databricks/
@@ -44,3 +49,4 @@ lead to greater savings.
 [medallion-lakehouse-architecture-silver]:    https://docs.databricks.com/lakehouse/medallion.html#validate-and-deduplicate-data-in-the-silver-layer
 [medallion-lakehouse-architecture-gold]:      https://docs.databricks.com/lakehouse/medallion.html#power-analytics-with-the-gold-layer
 [medallion-lakehouse-architecture-data-mesh]: https://www.databricks.com/glossary/medallion-architecture
+[green-software-foundation]:                  https://blogs.microsoft.com/blog/2021/05/25/accenture-github-microsoft-and-thoughtworks-launch-the-green-software-foundation-with-the-linux-foundation-to-put-sustainability-at-the-core-of-software-engineering/
