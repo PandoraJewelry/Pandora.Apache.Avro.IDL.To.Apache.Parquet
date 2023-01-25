@@ -1,0 +1,59 @@
+/**
+  Currently genavro only does Protocols.
+ */
+@namespace("org.apache.avro")
+protocol InteropProtocol {
+
+  record Foo {
+
+    string label;
+
+  }
+
+  enum Kind {
+
+    A,
+    B,
+    C
+
+  }
+
+  fixed MD5 (16);
+
+  record Node {
+
+    string label;
+
+    array<org.apache.avro.Node> children = [];
+
+  }
+
+  record Interop {
+
+    int intField = 1;
+
+    long longField = -1;
+
+    string stringField;
+
+    boolean boolField = false;
+
+    float floatField = 0.000000;
+
+    double doubleField = -1000000000000.000000;
+
+    null nullField;
+
+    map<org.apache.avro.Foo> mapField;
+
+    union{boolean,double,array<bytes>} unionField;
+
+    org.apache.avro.Kind enumField;
+
+    org.apache.avro.MD5 fixedField;
+
+    org.apache.avro.Node recordField;
+
+  }
+
+}

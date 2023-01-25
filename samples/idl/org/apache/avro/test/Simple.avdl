@@ -1,0 +1,94 @@
+/**
+  A simple test case.
+ */
+@version("1.0.5")
+@namespace("org.apache.avro.test")
+protocol Simple {
+
+  /**
+    A kind of record.
+   */
+  @aliases(["org.foo.KindOf"])
+  enum Kind {
+
+    FOO,
+    BAR, // the bar enum value
+    BAZ
+
+  }
+
+  enum Status {
+
+    A,
+    B,
+    C
+
+  } = C; // C is the default value used when reading unknown values from another schema version (without it, reading throws an exception).
+
+  /**
+    A TestRecord.
+   */
+  @my-property({"key":3})
+  record TestRecord {
+
+    /**
+      Tests that keywords can also appear in identifiers.
+     */
+    string @order("ignore") name = "foo";
+
+    /**
+      The kind of record.
+     */
+    org.apache.avro.test.Kind @order("descending") kind;
+
+    /**
+      The status of the record.
+     */
+    org.apache.avro.test.Status status = "A";
+
+    org.apache.avro.test.MD5 hash = "0000000000000000";
+
+    /**
+      A traditional optional field
+     */
+    union{null,org.apache.avro.test.MD5} @aliases(["hash","hsh"]) nullableHash = null;
+
+    /**
+      These two fields parse correctly, but will brewak (be
+      changed to strings) when serializing the protocol/schema as
+      JSON.
+     */
+    double value;
+
+    /**
+      These two fields parse correctly, but will brewak (be
+      changed to strings) when serializing the protocol/schema as
+      JSON.
+     */
+    float average;
+
+    union{time_ms,null} t = 0;
+
+    @foo.bar("bar.foo") long l = 0;
+
+    /**
+      Arrays (and maps) may also have properties
+     */
+    @foo.bar.bar("foo.bar2") array<string> a = [];
+
+    @foo.foo.bar(42) @foo.foo.foo("3foo") union{null,string} prop = null;
+
+  }
+
+  /**
+    An MD5 hash.
+   */
+  fixed MD5 (16);
+
+  error TestError {
+
+    string message;
+
+  }
+
+}

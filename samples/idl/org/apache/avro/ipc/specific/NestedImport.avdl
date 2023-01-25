@@ -1,0 +1,9 @@
+@version("1.0.5")
+@namespace("org.apache.avro.ipc.specific")
+protocol NestedImport {
+
+  record Foo {
+
+  }
+
+}

@@ -1,0 +1,12 @@
+@namespace("org.foo")
+protocol Import {
+
+  import idl "../apache/avro/ipc/specific/NestedImport.avdl";
+
+  record Bar {
+
+    org.apache.avro.ipc.specific.Foo foo;
+
+  }
+
+}
