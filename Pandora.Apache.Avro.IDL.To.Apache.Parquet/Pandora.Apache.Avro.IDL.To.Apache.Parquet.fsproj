@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>0.11.0</Version>
+    <Authors>Pandora A/S</Authors>
+    <Company>Pandora A/S</Company>
+    <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
+    <Description>We present an open-source library, that will help transform AVRO, with nested data, to multiple PARQUET files where each of the nested data elements will be represented as an extension table (separate file)</Description>
+    <Copyright>Copyright © Pandora A/S 2023</Copyright>
+    <Summary>We present an open-source library, that will help transform AVRO, with nested data, to multiple PARQUET files where each of the nested data elements will be represented as an extension table (separate file)</Summary>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Title>Pandora's open-source library that transform AVRO data to multiple PARQUET files</Title>
+    <PackageId>Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageId>
+    <PackageTags>pandorajewelry;pandora;jewelry;apache;avro;idl;parquet;kafka;databricks;spark;deltalake;delta;lake</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/PandoraJewelry/Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageProjectUrl>
+    <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Pandora/Apache/Avro.fs" />
+    <Compile Include="Pandora/Apache/Parquet.fs" />
+    <Compile Include="Pandora/Azure/Databricks.fs" />
+  </ItemGroup>
+
+</Project>
