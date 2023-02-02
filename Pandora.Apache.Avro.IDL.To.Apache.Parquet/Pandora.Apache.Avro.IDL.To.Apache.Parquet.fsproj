@@ -11,7 +11,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <Title>Pandora's open-source library that transform AVRO data to multiple PARQUET files</Title>
     <PackageId>Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageId>
-    <PackageTags>pandorajewelry;pandora;jewelry;apache;avro;idl;parquet;kafka;databricks;spark;deltalake;delta;lake</PackageTags>
+    <PackageTags>pandorajewelry;pandora;jewelry;apache;avro;idl;parquet;kafka;spark;azure;databricks;deltalake;delta;lake</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/PandoraJewelry/Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageProjectUrl>
     <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
@@ -33,9 +33,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Pandora/Apache/Avro.fs" />
-    <Compile Include="Pandora/Apache/Parquet.fs" />
+    <Compile Include="Pandora/Utilities/Date.fs" />
+    <Compile Include="Pandora/Utilities/Hash.fs" />
+    <Compile Include="Pandora/Utilities/JSON.fs" />
+    <Compile Include="Pandora/Utilities/UTF8.fs" />
+    <Compile Include="Pandora/Helpers/JSON.fs" />
     <Compile Include="Pandora/Azure/Databricks.fs" />
+    <Compile Include="Pandora/Apache/Parquet.fs" />
+    <Compile Include="Pandora/Apache/Avro.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Apache.Avro" Version="1.11.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Parquet.Net" Version="4.2.2" />
   </ItemGroup>
 
 </Project>

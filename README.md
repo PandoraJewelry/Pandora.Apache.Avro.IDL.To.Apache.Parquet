@@ -1,5 +1,7 @@
 # Pandora.Apache.Avro.IDL.To.Apache.Parquet
 
+## Background
+
 Currently, when working with [Apache Kafka®][apache-kafka] and [Azure
 Databricks®][azure-databricks] ([Apache Spark®][apache-spark]), there is a
 built-in mechanism to transform [Apache Avro®][apache-avro] data to [Apache
@@ -20,9 +22,11 @@ more tedious to post-process data respectively in the following layers: [silver
 To avoid this issue, we present an **open-source library**, that will help
 transform `AVRO`, with nested data, to multiple `PARQUET` files where each of
 the nested data elements will be represented as an extension table (separate
-file). This will allow to merge both the **bronze** and **silver** layers, to
-make it easier for data engineers/scientists and business analysts to combine
-data with already known logic (`SQL joins`).
+file). This will allow to merge both the **bronze** and **silver** layers
+(_full, raw and history of each dataset combined with defined structure,
+enforced schemas as well validated and deduplicated data_), to make it easier
+for data engineers/scientists and business analysts to combine data with already
+known logic (`SQL joins`).
 
 | ![Azure Databricks notebook](docs/pictures/databricks-python-notebook-sql-cell.png) | 
 |:--:| 
@@ -50,3 +54,23 @@ friendly** approach.
 [medallion-lakehouse-architecture-gold]:      https://docs.databricks.com/lakehouse/medallion.html#power-analytics-with-the-gold-layer
 [medallion-lakehouse-architecture-data-mesh]: https://www.databricks.com/glossary/medallion-architecture
 [green-software-foundation]:                  https://blogs.microsoft.com/blog/2021/05/25/accenture-github-microsoft-and-thoughtworks-launch-the-green-software-foundation-with-the-linux-foundation-to-put-sustainability-at-the-core-of-software-engineering/
+
+## Project dependencies
+
+### Pandora.Apache.Avro.IDL.To.Apache.Parquet
+
+| Dependency | Author | License |
+|---| ---| --- |
+| FSharp.Core                                 | Microsoft                      | [MIT License](https://github.com/dotnet/fsharp/blob/main/License.txt)
+| Apache.Avro                                 | The Apache Software Foundation | [Apache License 2.0](https://github.com/apache/avro/blob/master/LICENSE.txt)
+| Newtonsoft.Json                             | James Newton-King              | [MIT License](https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md)
+| Parquet.Net                                 | Ivan G                         | [MIT License](https://github.com/aloneguid/parquet-dotnet/blob/master/LICENSE)
+
+### Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests
+
+| Dependency | Author | License |
+|---| ---| --- |
+| Microsoft.NET.Test.Sdk                    | Microsoft         | [MIT License](https://github.com/microsoft/vstest/blob/main/LICENSE)
+| coverlet.collector                        | .NET foundation   | [MIT License](https://github.com/coverlet-coverage/coverlet/blob/master/LICENSE)
+| xunit                                     | .NET foundation   | [Apache License 2.0](https://github.com/xunit/xunit/blob/main/LICENSE)
+| xunit.runner.visualstudio                 | .NET foundation   | [Apache License 2.0](https://github.com/xunit/visualstudio.xunit/blob/main/License.txt)
