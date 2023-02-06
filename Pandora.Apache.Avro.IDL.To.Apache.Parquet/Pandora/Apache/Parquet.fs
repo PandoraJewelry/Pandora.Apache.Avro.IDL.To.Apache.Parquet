@@ -8,7 +8,7 @@ module Parquet =
   open System
   
   open Pandora.Azure
-  open Pandora.Utilities
+  open Pandora.Utils
 
   [<RequireQualifiedAccess>]
   module private Dict =
@@ -399,6 +399,13 @@ module Parquet =
     open Parquet.Schema
     open Parquet.Rows
     
+    [<RequireQualifiedAccess>]
+    module Bytes =
+      
+      type t = (string, byte[]) Dict.t
+      
+      let empty () = new t (StringComparer.OrdinalIgnoreCase)
+    
     type t = (string, Table) Dict.t
     
     let private uuid name =
@@ -751,107 +758,113 @@ module Parquet =
         | ___________________________________________________________________________________ ->
           a = b
 
-    let rec populate dts osha opid ofid (ast:Schema.Ast.t) (avro:Avro.Generic.GenericRecord) asn asns (tables:t) =
-      // use `isPrimitive` to filter out what to fill for a given record
-      let uid = Guid.NewGuid().ToByteArray()
-      let (ps, cs) =
-        let fqdn =
-          ( asn
-          , asns
-          )
-          |> Schema.Ast.Fqdn.FQDN
-        ast.[fqdn]
-        |> fun fs ->
-          ( fs
-            |> Seq.filter (fun f -> isPrimitive f.Value)
-            |> Seq.sortBy (fun f ->             f.Key)
-            |> Seq.map(
-              fun kv ->
-                let key =
-                  kv.Key.Replace
-                    ( asns
-                      |> Option.defaultValue String.Empty
-                      |> sprintf "%s."
-                    , String.Empty
-                    )
-                match avro.TryGetValue key with
-                  | (true,  v) -> primitive2obj v kv.Value
-                  | (false, _) -> null // TODO: Changed
+    let rec populate
+      (dto:DateTimeOffset)
+      osha opid ofid
+      (ast:Schema.Ast.t)
+      (avro:Avro.Generic.GenericRecord)
+      asn asns
+      (tables:t) =
+        // use `isPrimitive` to filter out what to fill for a given record
+        let uid = Guid.NewGuid().ToByteArray()
+        let (ps, cs) =
+          let fqdn =
+            ( asn
+            , asns
             )
-          , fs
-            |> Seq.filter (fun f -> not (isPrimitive f.Value))
-            |> Seq.choose (
-              fun f ->
-                match f.Value with
-                  | Schema.Ast.Type.ERROR  _
-                  | Schema.Ast.Type.RECORD _ -> Some f
-                  | ________________________ -> None
-            )
-          )
-      
-      (* Child record/error types *)
-      cs
-      |> Seq.iter(
-        fun kv ->
-          let key =
-            kv.Key.Replace
-              ( asns
-                |> Option.defaultValue String.Empty
-                |> sprintf "%s."
-              , String.Empty
+            |> Schema.Ast.Fqdn.FQDN
+          ast.[fqdn]
+          |> fun fs ->
+            ( fs
+              |> Seq.filter (fun f -> isPrimitive f.Value)
+              |> Seq.sortBy (fun f ->             f.Key)
+              |> Seq.map(
+                fun kv ->
+                  let key =
+                    kv.Key.Replace
+                      ( asns
+                        |> Option.defaultValue String.Empty
+                        |> sprintf "%s."
+                      , String.Empty
+                      )
+                  match avro.TryGetValue key with
+                    | (true,  v) -> primitive2obj v kv.Value
+                    | (false, _) -> null // TODO: Changed
               )
-          match avro.TryGetValue key with
-            | (true,  v) ->
-              match kv.Value with
-                | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.ARRAY) ->
-                  popuArray dts uid key ast (v :?> IEnumerable<_>)       fqdn tables
-                | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.MAP)   ->
-                  popuMap   dts uid key ast (v :?> Dictionary<string,_>) fqdn tables
-                | Schema.Ast.Type.RECORD (fqdn, Some (Schema.Ast.Type.Transformation.UNION len)) ->
-                  popuUnion dts uid key ast  v                           fqdn tables len
-                | Schema.Ast.Type.ERROR    fqdn
-                | Schema.Ast.Type.RECORD  (fqdn,_)                                         ->
-                  let (n', ons') =
-                    ( Schema.Ast.Fqdn.name          fqdn
-                    , Schema.Ast.Fqdn.``namespace`` fqdn
-                    )
-                  populate dts None (Some uid) (Some key) ast (v :?> Avro.Generic.GenericRecord) n' ons' tables
-                | ________________________ -> ()
-            | (false, _) -> ()
-      )
-      
-      let vs : obj seq =
-        seq {
-          (* "pj_uid" *)
-          yield  uid
-          (* "pj_pds" *)
-          yield  dts
-          if not (None = osha) then
-            (* "pj_sha" *)
-            yield Option.defaultValue [| |] osha
-            (* "pj_dts" *)
-            yield dts
-          if not (None = opid) then
-            (* "pj_pid" *)
-            yield Option.defaultValue [| |] opid
-          if not (None = ofid) then
-            (* "pj_fid" *)
-            yield Option.defaultValue String.Empty ofid
-          yield! ps
-        }
-      
-      let row = new Row(values = vs)
-      let tfn =
-        match asns with
-          | Some ns -> sprintf "%s.%s" ns asn
-          | None    -> asn
-      try
-        tables.[tfn].Add(item = row)
-      with ex ->
-        printfn "> DEBUG | tfn : %A" tfn
-        printfn "> DEBUG | ex  : %A" ex
+            , fs
+              |> Seq.filter (fun f -> not (isPrimitive f.Value))
+              |> Seq.choose (
+                fun f ->
+                  match f.Value with
+                    | Schema.Ast.Type.ERROR  _
+                    | Schema.Ast.Type.RECORD _ -> Some f
+                    | ________________________ -> None
+              )
+            )
+        
+        (* Child record/error types *)
+        cs
+        |> Seq.iter(
+          fun kv ->
+            let key =
+              kv.Key.Replace
+                ( asns
+                  |> Option.defaultValue String.Empty
+                  |> sprintf "%s."
+                , String.Empty
+                )
+            match avro.TryGetValue key with
+              | (true,  v) ->
+                match kv.Value with
+                  | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.ARRAY) ->
+                    popuArray dto uid key ast (v :?> IEnumerable<_>)       fqdn tables
+                  | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.MAP)   ->
+                    popuMap   dto uid key ast (v :?> Dictionary<string,_>) fqdn tables
+                  | Schema.Ast.Type.RECORD (fqdn, Some (Schema.Ast.Type.Transformation.UNION len)) ->
+                    popuUnion dto uid key ast  v                           fqdn tables len
+                  | Schema.Ast.Type.ERROR    fqdn
+                  | Schema.Ast.Type.RECORD  (fqdn,_)                                         ->
+                    let (n', ons') =
+                      ( Schema.Ast.Fqdn.name          fqdn
+                      , Schema.Ast.Fqdn.``namespace`` fqdn
+                      )
+                    populate dto None (Some uid) (Some key) ast (v :?> Avro.Generic.GenericRecord) n' ons' tables
+                  | ________________________ -> ()
+              | (false, _) -> ()
+        )
+        
+        let vs : obj seq =
+          seq {
+            (* "pj_uid" *)
+            yield  uid
+            (* "pj_pds" *)
+            yield  dto
+            if not (None = osha) then
+              (* "pj_sha" *)
+              yield Option.defaultValue [| |] osha
+              (* "pj_dts" *)
+              yield dto
+            if not (None = opid) then
+              (* "pj_pid" *)
+              yield Option.defaultValue [| |] opid
+            if not (None = ofid) then
+              (* "pj_fid" *)
+              yield Option.defaultValue String.Empty ofid
+            yield! ps
+          }
+        
+        let row = new Row(values = vs)
+        let tfn =
+          match asns with
+            | Some ns -> sprintf "%s.%s" ns asn
+            | None    -> asn
+        try
+          tables.[tfn].Add(item = row)
+        with ex ->
+          printfn "> DEBUG | tfn : %A" tfn
+          printfn "> DEBUG | ex  : %A" ex
 
-    and private popuArray dts uid key (ast:Schema.Ast.t) (vs : IEnumerable<_>) fqdn (tables:t) =
+    and private popuArray dto uid key (ast:Schema.Ast.t) (vs : IEnumerable<_>) fqdn (tables:t) =
       let fv =
         fqdn
         |> Schema.Ast.Fqdn.``namespace``
@@ -867,7 +880,7 @@ module Parquet =
                 (* "pj_uid" *)
                 yield  Guid.NewGuid().ToByteArray()
                 (* "pj_pds" *)
-                yield  dts
+                yield  dto
                 (* "pj_pid" *)
                 yield  uid
                 (* "pj_fid" *)
@@ -894,10 +907,10 @@ module Parquet =
         (vs :?> IEnumerable<obj>)
         |> Seq.iter (
           fun nv ->
-            populate dts None (Some uid) (Some key) ast (nv :?> Avro.Generic.GenericRecord) n' ons' tables
+            populate dto None (Some uid) (Some key) ast (nv :?> Avro.Generic.GenericRecord) n' ons' tables
         )
 
-    and private popuMap dts uid key (ast:Schema.Ast.t) (kvs : Dictionary<string,_>) fqdn (tables:t) =
+    and private popuMap dto uid key (ast:Schema.Ast.t) (kvs : Dictionary<string,_>) fqdn (tables:t) =
       let fv =
         fqdn
         |> Schema.Ast.Fqdn.``namespace``
@@ -915,7 +928,7 @@ module Parquet =
                 (* "pj_uid" *)
                 yield  uid'
                 (* "pj_pds" *)
-                yield  dts
+                yield  dto
                 (* "pj_pid" *)
                 yield  uid
                 (* "pj_fid" *)
@@ -934,7 +947,7 @@ module Parquet =
                         , Schema.Ast.Fqdn.``namespace`` fqdn'
                         )
                       let nv = nkv.Value :> obj :?> Avro.Generic.GenericRecord
-                      populate dts None (Some uid') (Some "value") ast nv n' ons' tables
+                      populate dto None (Some uid') (Some "value") ast nv n' ons' tables
                     | ________________________________ ->
                       ()
               }
@@ -958,10 +971,10 @@ module Parquet =
         |> Seq.iter (
           fun nkv ->
             let nv = nkv.Value :?> Avro.Generic.GenericRecord
-            populate dts None (Some uid) (Some key) ast nv n' ons' tables
+            populate dto None (Some uid) (Some key) ast nv n' ons' tables
         )
 
-    and private popuUnion dts uid key (ast:Schema.Ast.t) v fqdn (tables:t) len =
+    and private popuUnion dto uid key (ast:Schema.Ast.t) v fqdn (tables:t) len =
       let fs =
         ( fun i ->
             fqdn
@@ -1007,7 +1020,7 @@ module Parquet =
               (* "pj_uid" *)
               yield  Guid.NewGuid().ToByteArray()
               (* "pj_pds" *)
-              yield  dts
+              yield  dto
               (* "pj_pid" *)
               yield  uid
               (* "pj_fid" *)
@@ -1055,7 +1068,7 @@ module Parquet =
                         else
                           cs.ToLowerInvariant()
                           
-                    popuArray dts uid key' ast (v :?> IEnumerable<_>) fqdn' tables
+                    popuArray dto uid key' ast (v :?> IEnumerable<_>) fqdn' tables
 
                   | Schema.Ast.Type.RECORD (fqdn', Some Schema.Ast.Type.Transformation.MAP)  ->
                     let key' =
@@ -1071,7 +1084,7 @@ module Parquet =
                         else
                           cs.ToLowerInvariant()
                           
-                    popuMap dts uid key' ast (v :?> Dictionary<string,_>) fqdn' tables
+                    popuMap dto uid key' ast (v :?> Dictionary<string,_>) fqdn' tables
 
                   | Schema.Ast.Type.RECORD (fqdn', Some (Schema.Ast.Type.Transformation.UNION _))  ->
                     (* NOTE: Nested unions are not supported
@@ -1086,7 +1099,7 @@ module Parquet =
                       , Schema.Ast.Fqdn.``namespace`` fqdn'
                       )
 
-                    populate dts None (Some uid) (Some key) ast (v  :?> Avro.Generic.GenericRecord) n' ons' tables
+                    populate dto None (Some uid) (Some key) ast (v  :?> Avro.Generic.GenericRecord) n' ons' tables
                   | ______________________________________________________________________________ ->
                     ()
           )
@@ -1254,7 +1267,7 @@ module Parquet =
             |> Some
         | _ ->
           None
-
+    
     let toFiles (dts:DateTime) (tables:t) path =
       tables
       |> Seq.filter(
@@ -1333,6 +1346,38 @@ module Parquet =
           |> Databricks.Delta.toFiles 0 dp
       )
     
-    let toBytes _ =
-      (* TODO: Replace `toFiles` with this method *)
-      ()
+    let toBytes (dts:DateTime) (tables:t) =
+      let dict = Bytes.empty ()
+      tables
+      |> Seq.filter(
+        fun t ->
+          (* NOTE: Only convert tables with elements to files *)
+          0 < t.Value.Count
+      )
+      |> Seq.sortBy (fun kv -> kv.Key)
+      |> Seq.iter(
+        fun t ->
+          let fn =
+            ( Date.Filename.fromDateTime dts
+            , Guid.NewGuid()
+            ) 
+            ||> sprintf "%s_%A.snappy.parquet"
+          use ms = new MemoryStream ()
+          let _ =
+            (* Add to ensure .Dispose is called *)
+            use ws =
+              ParquetWriter.CreateAsync
+                ( schema = t.Value.Schema
+                , output = ms
+                )
+              |> Async.AwaitTask
+              |> Async.RunSynchronously
+            //ws.CompressionMethod <- CompressionMethod.Gzip // 10k -> 57M
+            ws.CompressionMethod <- CompressionMethod.Snappy // 10k -> 58M
+            ws.WriteAsync(table = t.Value)
+            |> Async.AwaitTask
+            |> Async.RunSynchronously
+          dict.[fn] <- ms.ToArray()
+          ms.Flush()
+      )
+      dict

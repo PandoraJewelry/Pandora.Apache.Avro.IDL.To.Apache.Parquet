@@ -1,4 +1,4 @@
-namespace Pandora.Utilities
+namespace Pandora.Utils
 
 [<RequireQualifiedAccess>]
 module Hash =
@@ -8,12 +8,18 @@ module Hash =
     
     open System.Security.Cryptography
     open System.Text
-    
-    let bytes bs =
-      use sha = SHA256.Create()
-      sha.ComputeHash(buffer = bs)
-      |> Array.map    (sprintf "%02x")
-      |> Array.reduce (sprintf "%s%s")
+  
+    [<RequireQualifiedAccess>]
+    module Bytes =
+      
+      let toBytes bs =
+        use sha = SHA256.Create()
+        sha.ComputeHash(buffer = bs)
+      
+      let toString =
+        toBytes
+        >> Array.map    (sprintf "%02x")
+        >> Array.reduce (sprintf "%s%s")
     
     (* Terminal vs .NET implementation
     
@@ -27,4 +33,4 @@ module Hash =
     
     let sum str =
       Encoding.UTF8.GetBytes(s = str)
-      |> bytes
+      |> Bytes.toString

@@ -6,16 +6,16 @@ module Databricks =
   [<RequireQualifiedAccess>]
   module Delta =
   
+    open System.Collections.Generic
     open System.IO
     
-    open Pandora.Utilities
+    open Pandora.Utils
     
     [<RequireQualifiedAccess>]
     module JSONL =
       (* https://jsonlines.org/ *)
       
       open System
-    
       open System.Runtime.Serialization
     
       type EmptyObj () =
@@ -352,7 +352,7 @@ module Databricks =
         , Add.init path size timestamp
         )
     
-    let toFiles (delta:int64) path ((proto, meta, file):JSONL.t)  =
+    let toFiles (delta:int64) path ((proto, meta, file):JSONL.t) =
       let i = sprintf "%020i" delta
       let d =
         Path.Combine
@@ -381,6 +381,32 @@ module Databricks =
       |> Async.AwaitTask
       |> Async.RunSynchronously
     
-    let toBytes _ =
-      (* TODO: Replace `toFiles` with this method *)
-      ()
+    let toBytes (delta:int64) path ((proto, meta, file):JSONL.t) =
+      let i = sprintf "%020i" delta
+      let d =
+        Path.Combine
+          ( path
+          , "_delta_log"
+          )
+      let f =
+        Path.Combine
+          ( d
+          , sprintf "%s.json" i
+          )
+      use ms = new MemoryStream ()
+      use sw = new StreamWriter (ms, UTF8.noBOM)
+      seq {
+        yield JSON.serialize false true proto
+        yield JSON.serialize false true meta
+        yield JSON.serialize false true file
+      }
+      |> Seq.iter(
+        fun x ->
+          sw.Write x
+          sw.Flush()
+      )
+      ms.Flush()
+      new KeyValuePair<string, byte[]>
+        ( f
+        , ms.ToArray()
+        )

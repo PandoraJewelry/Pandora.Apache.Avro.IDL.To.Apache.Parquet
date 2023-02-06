@@ -1,4 +1,4 @@
-namespace Pandora.Utilities
+namespace Pandora.Utils
 
 [<RequireQualifiedAccess>]
 module Date =
