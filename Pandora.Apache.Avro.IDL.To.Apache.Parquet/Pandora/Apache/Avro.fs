@@ -563,7 +563,7 @@ module Avro =
               match JSON.memberStrValue "name" o with
                 | Some str -> str
                 | None     -> String.Empty
-            let (fqdn, nt) =  // TODO: Changed
+            let (fqdn, nt) =
               (o.["type"] :?> JArray)
               (* NOTE: Ensure no `null` type are present *)
               |> Seq.filter(
@@ -662,7 +662,7 @@ module Avro =
               match JSON.memberStrValue "name" o with
                 | Some str -> toPascalCase str
                 | None     -> String.Empty
-            let ts = // TODO: Added
+            let ts =
               (o.["type"] :?> JArray)
               (* NOTE: Ensure no `null` type are present *)
               |> Seq.filter(
@@ -670,7 +670,7 @@ module Avro =
                   not (Result.Ok Parquet.Schema.Ast.Type.NULL = Parquet.Schema.Ast.Field.toType ons' env ast nt)
               )
               (* REMARK: We don't need to ensure that a specific type appears multiple times. Not permitted by AVRO *)
-            let ps = // TODO: Modified
+            let ps =
               ts
               |> Seq.mapi(
                 fun i nt ->

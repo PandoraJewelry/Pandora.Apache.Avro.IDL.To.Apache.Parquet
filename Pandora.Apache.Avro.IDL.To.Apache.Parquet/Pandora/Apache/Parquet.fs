@@ -7,9 +7,9 @@ module Parquet =
   
   open System
   
-  open Pandora.Azure
+  open Pandora.Databricks
   open Pandora.Utils
-
+  
   [<RequireQualifiedAccess>]
   module private Dict =
         
@@ -392,12 +392,13 @@ module Parquet =
   [<RequireQualifiedAccess>]
   module Tables =
     
-    open System.IO
     open System.Collections.Generic
+    open System.IO
+  
+    open Parquet.Rows
     
     open Parquet
     open Parquet.Schema
-    open Parquet.Rows
     
     [<RequireQualifiedAccess>]
     module Bytes =
@@ -465,7 +466,7 @@ module Parquet =
       label "pj_fid"
     
     let private isNullable = function
-      | Schema.Ast.Type.NULL      -> // TODO: Added
+      | Schema.Ast.Type.NULL      ->
         true
       | Schema.Ast.Type.UNION fts ->
         ( fts
@@ -531,10 +532,10 @@ module Parquet =
     
     let rec private schemaField unionNullable name (ft:Schema.Ast.Type.t) =
       if isPrimitive ft then
-        let nullable = unionNullable || isNullable ft // TODO: Refactored
+        let nullable = unionNullable || isNullable ft
         match ft with
           | Schema.Ast.Type.NULL ->
-            DataType.String // TODO: Changed
+            DataType.String
             |> schemaFieldHlp name nullable
             |> Some
           | Schema.Ast.Type.BOOLEAN ->
@@ -558,7 +559,6 @@ module Parquet =
             |> schemaFieldHlp name nullable
             |> Some
           | Schema.Ast.Type.BYTES ->
-            // TODO: Refactored
             DataType.ByteArray
             |> schemaFieldHlp name nullable
             |> Some
@@ -706,13 +706,13 @@ module Parquet =
     let empty (ast:Schema.Ast.t) =
       update None ast
 
-    let rec private primitive2obj (v:obj) (t:Schema.Ast.Type.t) = // TODO: Changed
+    let rec private primitive2obj (v:obj) (t:Schema.Ast.Type.t) =
       if null = v then 
         v
       else
         match t with
           | Schema.Ast.Type.NULL         ->
-            null // TODO: Changed
+            null
           | Schema.Ast.Type.BOOLEAN
           | Schema.Ast.Type.INT
           | Schema.Ast.Type.LONG
@@ -720,7 +720,7 @@ module Parquet =
           | Schema.Ast.Type.DOUBLE
           | Schema.Ast.Type.BYTES
           | Schema.Ast.Type.STRING
-          | Schema.Ast.Type.TIME_MS -> // TODO: Added extra clauses
+          | Schema.Ast.Type.TIME_MS ->
             v
           | Schema.Ast.Type.DECIMAL _  ->
             v :?> Avro.AvroDecimal
@@ -789,7 +789,7 @@ module Parquet =
                       )
                   match avro.TryGetValue key with
                     | (true,  v) -> primitive2obj v kv.Value
-                    | (false, _) -> null // TODO: Changed
+                    | (false, _) -> null
               )
             , fs
               |> Seq.filter (fun f -> not (isPrimitive f.Value))
@@ -1268,116 +1268,29 @@ module Parquet =
         | _ ->
           None
     
-    let toFiles (dts:DateTime) (tables:t) path =
-      tables
-      |> Seq.filter(
-        fun t ->
-          (* NOTE: Only convert tables with elements to files *)
-          0 < t.Value.Count
-      )
-      |> Seq.iter(
-        fun t ->
-          let dp =
-            Path.Combine
-              ( path
-              , t.Key.Replace(".", "/")
-              )
-          let pp =
-            Path.Combine
-              ( dp
-              , dts.Date.ToString("yyyy-MM-dd")
-                |> sprintf "pj_pds=%s"
-              )
-          let fn =
-            ( Date.Filename.fromDateTime dts
-            , Guid.NewGuid()
-            ) 
-            ||> sprintf "%s_%A.snappy.parquet"
-          let fp =
-            Path.Combine
-              ( pp
-              , fn
-              )
-          use ms = new MemoryStream ()
-          let _ =
-            (* Add to ensure .Dispose is called *)
-            use ws =
-              ParquetWriter.CreateAsync
-                ( schema = t.Value.Schema
-                , output = ms
-                )
-              |> Async.AwaitTask
-              |> Async.RunSynchronously
-            //ws.CompressionMethod <- CompressionMethod.Gzip // 10k -> 57M
-            ws.CompressionMethod <- CompressionMethod.Snappy // 10k -> 58M
-            ws.WriteAsync(table = t.Value)
-            |> Async.AwaitTask
-            |> Async.RunSynchronously
-          (* 0) Ensure output folder exists *)
-          pp
-          |> Directory.CreateDirectory
-          |> ignore
-          (* ?) Store data in a PARQUET file *)
-          let bs = ms.ToArray()
-          File.WriteAllBytesAsync
-            ( path  = fp
-            , bytes = bs
+    let toBytes (dts:DateTime) (table:Table) =
+      let fn =
+        ( Date.Filename.fromDateTime dts
+        , Guid.NewGuid()
+        ) 
+        ||> sprintf "%s_%A.snappy.parquet"
+      use ms = new MemoryStream ()
+      let _ =
+        (* Add to ensure .Dispose is called *)
+        use ws =
+          ParquetWriter.CreateAsync
+            ( schema = table.Schema
+            , output = ms
             )
           |> Async.AwaitTask
           |> Async.RunSynchronously
-          ms.Flush()
-          (* ?) Create `_delta_log` control file *)
-        
-          Databricks.Delta.JSONL.init
-            ( dts )
-            ( bs.LongLength )
-            ( t.Value.Schema.GetDataFields()
-              |> Seq.map(
-                fun (f) ->
-                  ( f.Name
-                  , f.DataType.ToString().ToLowerInvariant()
-                  , f.HasNulls
-                  , f.IsArray
-                  )
-              )
-              |> Databricks.Delta.JSONL.Schema.init
-            )
-            ( fn )
-          |> Databricks.Delta.toFiles 0 dp
-      )
-    
-    let toBytes (dts:DateTime) (tables:t) =
-      let dict = Bytes.empty ()
-      tables
-      |> Seq.filter(
-        fun t ->
-          (* NOTE: Only convert tables with elements to files *)
-          0 < t.Value.Count
-      )
-      |> Seq.sortBy (fun kv -> kv.Key)
-      |> Seq.iter(
-        fun t ->
-          let fn =
-            ( Date.Filename.fromDateTime dts
-            , Guid.NewGuid()
-            ) 
-            ||> sprintf "%s_%A.snappy.parquet"
-          use ms = new MemoryStream ()
-          let _ =
-            (* Add to ensure .Dispose is called *)
-            use ws =
-              ParquetWriter.CreateAsync
-                ( schema = t.Value.Schema
-                , output = ms
-                )
-              |> Async.AwaitTask
-              |> Async.RunSynchronously
-            //ws.CompressionMethod <- CompressionMethod.Gzip // 10k -> 57M
-            ws.CompressionMethod <- CompressionMethod.Snappy // 10k -> 58M
-            ws.WriteAsync(table = t.Value)
-            |> Async.AwaitTask
-            |> Async.RunSynchronously
-          dict.[fn] <- ms.ToArray()
-          ms.Flush()
-      )
-      dict
+        ws.CompressionMethod <- CompressionMethod.Snappy
+        ws.WriteAsync(table = table)
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
+      let bs = ms.ToArray()
+      ms.Flush()
+      new KeyValuePair<string, byte[]>
+        ( fn
+        , bs
+        )

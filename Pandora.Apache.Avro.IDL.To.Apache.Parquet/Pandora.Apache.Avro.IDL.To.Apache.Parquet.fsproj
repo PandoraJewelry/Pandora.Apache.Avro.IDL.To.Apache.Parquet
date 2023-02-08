@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.11.2</Version>
+    <Version>0.11.4</Version>
     <Authors>Pandora A/S</Authors>
     <Company>Pandora A/S</Company>
     <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
@@ -38,7 +38,7 @@
     <Compile Include="Pandora/Utils/JSON.fs" />
     <Compile Include="Pandora/Utils/UTF8.fs" />
     <Compile Include="Pandora/Helpers/JSON.fs" />
-    <Compile Include="Pandora/Azure/Databricks.fs" />
+    <Compile Include="Pandora/Databricks/DeltaLake.fs" />
     <Compile Include="Pandora/Apache/Parquet.fs" />
     <Compile Include="Pandora/Apache/Avro.fs" />
   </ItemGroup>

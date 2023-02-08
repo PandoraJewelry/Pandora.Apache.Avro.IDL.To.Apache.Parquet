@@ -24,7 +24,7 @@ module DeltaLake =
       [<RequireQualifiedAccess>]
       module Type =
         
-        let fromParquet isArray = function
+        let fromParquet isArray = function // TODO: Refactored
           (* * Delta Lake > Protocol > Schema Serialization Format:
                - https://github.com/delta-io/delta/blob/master/PROTOCOL.md#Schema-Serialization-Format
              * Input: namespace Parquet.Data > public enum DataType:
@@ -38,7 +38,7 @@ module DeltaLake =
           | "boolean"                  -> "boolean"
           | "byte"
           | "signedbyte"
-          | "unsignedbyte"             ->
+          | "unsignedbyte"             -> // TODO: Refactored
             if isArray then
               "binary"
             else
@@ -57,7 +57,7 @@ module DeltaLake =
           | "datetimeoffset"           -> "timestamp"
           //| "timespan"                 -> "integer"
           | "timespan"                 -> "long"
-          (* NOTE: We can't specify `unspecified` as `null` *)
+          (* NOTE: We can't specify `unspecified` as `null` *) // TODO: Modified
           | "unspecified"              -> "string"
           | "int96"
           | "interval"    as otherwise
@@ -142,7 +142,7 @@ module DeltaLake =
           fields   =
             fs
             |> Seq.map (
-              fun (name, ``type``, nullable, isArray) ->
+              fun (name, ``type``, nullable, isArray) -> // TODO: Refactored
                 Field.init name (Type.fromParquet isArray ``type``) nullable
             )
         }
@@ -348,6 +348,37 @@ module DeltaLake =
       , MetaData.init mid  timestamp schema
       , Add.init path size timestamp
       )
+  
+  (*
+  let toFiles (delta:int64) path ((proto, meta, file):JSONL.t) =
+    let i = sprintf "%020i" delta
+    let d =
+      Path.Combine
+        ( path
+        , "_delta_log"
+        )
+    let f =
+      Path.Combine
+        ( d
+        , sprintf "%s.json" i
+        )
+    d
+    |> Directory.CreateDirectory
+    |> ignore
+    (* ?) Store file addition info in a JSONL file *)
+    File.WriteAllLinesAsync
+        ( path     = f
+        , contents =
+            seq {
+              yield JSON.serialize false true proto
+              yield JSON.serialize false true meta
+              yield JSON.serialize false true file
+            }
+        , encoding = UTF8.noBOM
+        )
+    |> Async.AwaitTask
+    |> Async.RunSynchronously
+  *)
   
   let toBytes (delta:int64) path ((proto, meta, file):JSONL.t) =
     let i = sprintf "%020i" delta
