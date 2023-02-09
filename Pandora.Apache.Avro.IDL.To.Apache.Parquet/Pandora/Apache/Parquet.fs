@@ -7,7 +7,6 @@ module Parquet =
   
   open System
   
-  open Pandora.Databricks
   open Pandora.Utils
   
   [<RequireQualifiedAccess>]
