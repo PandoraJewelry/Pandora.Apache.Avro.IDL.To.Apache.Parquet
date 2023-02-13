@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.11.4</Version>
+    <Version>0.11.6</Version>
     <Authors>Pandora A/S</Authors>
     <Company>Pandora A/S</Company>
     <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
@@ -34,6 +34,7 @@
 
   <ItemGroup>
     <Compile Include="Pandora/Utils/Date.fs" />
+    <Compile Include="Pandora/Utils/Log.fs" />
     <Compile Include="Pandora/Utils/Hash.fs" />
     <Compile Include="Pandora/Utils/JSON.fs" />
     <Compile Include="Pandora/Utils/UTF8.fs" />
@@ -45,6 +46,7 @@
 
   <ItemGroup>
     <PackageReference Include="Apache.Avro" Version="1.11.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Parquet.Net" Version="4.2.2" />
   </ItemGroup>

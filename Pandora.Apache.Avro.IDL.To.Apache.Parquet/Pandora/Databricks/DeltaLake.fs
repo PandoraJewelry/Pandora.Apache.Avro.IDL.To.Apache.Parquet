@@ -2,9 +2,11 @@ namespace Pandora.Databricks
   
 [<RequireQualifiedAccess>]
 module DeltaLake =
-
+  
   open System.Collections.Generic
   open System.IO
+  
+  open Microsoft.Extensions.Logging
   
   open Pandora.Utils
   
@@ -24,7 +26,7 @@ module DeltaLake =
       [<RequireQualifiedAccess>]
       module Type =
         
-        let fromParquet isArray = function // TODO: Refactored
+        let fromParquet isArray = function
           (* * Delta Lake > Protocol > Schema Serialization Format:
                - https://github.com/delta-io/delta/blob/master/PROTOCOL.md#Schema-Serialization-Format
              * Input: namespace Parquet.Data > public enum DataType:
@@ -38,7 +40,7 @@ module DeltaLake =
           | "boolean"                  -> "boolean"
           | "byte"
           | "signedbyte"
-          | "unsignedbyte"             -> // TODO: Refactored
+          | "unsignedbyte"             ->
             if isArray then
               "binary"
             else
@@ -57,7 +59,7 @@ module DeltaLake =
           | "datetimeoffset"           -> "timestamp"
           //| "timespan"                 -> "integer"
           | "timespan"                 -> "long"
-          (* NOTE: We can't specify `unspecified` as `null` *) // TODO: Modified
+          (* NOTE: We can't specify `unspecified` as `null` *)
           | "unspecified"              -> "string"
           | "int96"
           | "interval"    as otherwise
@@ -122,7 +124,7 @@ module DeltaLake =
             [<field: DataMember(Name="metadata")>]
             metadata : EmptyObj
           }
-        let init name ``type`` nullable =
+        let internal init name ``type`` nullable =
           { name     = name
             ``type`` = ``type``
             nullable = nullable
@@ -137,16 +139,21 @@ module DeltaLake =
           fields   : Field.t seq
         }
       
-      let init fs =
-        { ``type`` = "struct"
-          fields   =
-            fs
-            |> Seq.map (
-              fun (name, ``type``, nullable, isArray) -> // TODO: Refactored
-                Field.init name (Type.fromParquet isArray ``type``) nullable
-            )
-        }
-        |> JSON.serialize false true
+      let init (logger:ILogger) fs =
+        try
+          { ``type`` = "struct"
+            fields   =
+              fs
+              |> Seq.map (
+                fun (name, ``type``, nullable, isArray) ->
+                  Field.init name (Type.fromParquet isArray ``type``) nullable
+              )
+          }
+          |> JSON.serialize false true
+        with ex ->
+          "Unexpected error at Databricks.DeltaLake.JSONL.Schema.init"
+          |> Log.error logger ex
+          raise ex
     
     [<RequireQualifiedAccess>]
     module Protocol =
@@ -174,7 +181,7 @@ module DeltaLake =
           protocol : n
         }
       
-      let init protocol =
+      let internal init protocol =
         { protocol =
             { minReaderVersion = 1
               minWriterVersion = 2
@@ -195,7 +202,7 @@ module DeltaLake =
             options  : EmptyObj
           }
         
-        let init () =
+        let internal init () =
           { provider = "parquet"
             options = new EmptyObj ()
           }
@@ -252,7 +259,7 @@ module DeltaLake =
           metaData : n
         }
       
-      let init mid timestamp (schema:string) =
+      let internal init mid timestamp (schema:string) =
         let dts =
           timestamp
           |> Date.Unix.fromDateTime
@@ -295,7 +302,7 @@ module DeltaLake =
             dataChange       : bool
           }
           
-        let init path size timestamp =
+        let internal init path size timestamp =
           let dts =
             timestamp
             |> Date.Unix.fromDateTime
@@ -329,7 +336,7 @@ module DeltaLake =
           add : File.t
         }
       
-      let init path size timestamp =
+      let internal init path size timestamp =
         { add = File.init path size timestamp
         }
     
@@ -338,75 +345,54 @@ module DeltaLake =
       MetaData.t   *
       Add.t
   
-    let init timestamp size schema path =
-      let mid =
-        schema
-        |> Hash.SHA256.sum
-        |> fun h -> Guid.Parse(h.[0..31])
-      
-      ( Protocol.init ()
-      , MetaData.init mid  timestamp schema
-      , Add.init path size timestamp
-      )
+    let init (logger:ILogger) timestamp size schema path =
+      try
+        let mid =
+          schema
+          |> Hash.SHA256.sum
+          |> fun h -> Guid.Parse(h.[0..31])
+        
+        ( Protocol.init ()
+        , MetaData.init mid  timestamp schema
+        , Add.init path size timestamp
+        )
+      with ex ->
+        "Unexpected error at Databricks.DeltaLake.JSONL.init"
+        |> Log.error logger ex
+        raise ex
   
-  (*
-  let toFiles (delta:int64) path ((proto, meta, file):JSONL.t) =
-    let i = sprintf "%020i" delta
-    let d =
-      Path.Combine
-        ( path
-        , "_delta_log"
-        )
-    let f =
-      Path.Combine
-        ( d
-        , sprintf "%s.json" i
-        )
-    d
-    |> Directory.CreateDirectory
-    |> ignore
-    (* ?) Store file addition info in a JSONL file *)
-    File.WriteAllLinesAsync
-        ( path     = f
-        , contents =
-            seq {
-              yield JSON.serialize false true proto
-              yield JSON.serialize false true meta
-              yield JSON.serialize false true file
-            }
-        , encoding = UTF8.noBOM
-        )
-    |> Async.AwaitTask
-    |> Async.RunSynchronously
-  *)
-  
-  let toBytes (delta:int64) path ((proto, meta, file):JSONL.t) =
-    let i = sprintf "%020i" delta
-    let d =
-      Path.Combine
-        ( path
-        , "_delta_log"
-        )
-    let f =
-      Path.Combine
-        ( d
-        , sprintf "%s.json" i
-        )
-    use ms = new MemoryStream ()
-    use sw = new StreamWriter (ms, UTF8.noBOM)
-    seq {
-      yield JSON.serialize false true proto
-      yield JSON.serialize false true meta
-      yield JSON.serialize false true file
-    }
-    |> Seq.iter(
-      fun x ->
-        sw.Write x
-        sw.Flush()
-    )
-    let bs = ms.ToArray()
-    ms.Flush()
-    new KeyValuePair<string, byte[]>
-      ( f
-      , bs
+  let toBytes (logger:ILogger) (delta:int64) path ((proto, meta, file):JSONL.t) =
+    try
+      let i = sprintf "%020i" delta
+      let d =
+        Path.Combine
+          ( path
+          , "_delta_log"
+          )
+      let f =
+        Path.Combine
+          ( d
+          , sprintf "%s.json" i
+          )
+      use ms = new MemoryStream ()
+      use sw = new StreamWriter (ms, UTF8.noBOM)
+      seq {
+        yield JSON.serialize false true proto
+        yield JSON.serialize false true meta
+        yield JSON.serialize false true file
+      }
+      |> Seq.iter(
+        fun x ->
+          sw.Write x
+          sw.Flush()
       )
+      let bs = ms.ToArray()
+      ms.Flush()
+      new KeyValuePair<string, byte[]>
+        ( f
+        , bs
+        )
+    with ex ->
+      "Unexpected error at Databricks.DeltaLake.toBytes"
+      |> Log.error logger ex
+      raise ex
