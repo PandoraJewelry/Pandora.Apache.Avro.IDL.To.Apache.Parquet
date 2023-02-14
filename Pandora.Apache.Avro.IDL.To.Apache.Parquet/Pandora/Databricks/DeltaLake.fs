@@ -264,12 +264,11 @@ module DeltaLake =
           timestamp
           |> Date.Unix.fromDateTime
           |> int64
-        let pds = "pj_pds"
         { metaData =
             { id               = mid
               format           = Format.init ()
               schemaString     = schema
-              partitionColumns = seq { yield pds }
+              partitionColumns = seq { yield "pj_pds" }
               configuration    = new EmptyObj ()
               createdTime      = dts
             }

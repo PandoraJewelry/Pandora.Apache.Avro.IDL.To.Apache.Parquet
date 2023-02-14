@@ -51,7 +51,7 @@ protocol Simple {
     /**
       A traditional optional field
      */
-    union{null,org.apache.avro.test.MD5} @aliases(["hash","hsh"]) nullableHash = null;
+    union{null,org.apache.avro.test.MD5} @aliases(["hash_","hsh"]) nullableHash = null;
 
     /**
       These two fields parse correctly, but will brewak (be

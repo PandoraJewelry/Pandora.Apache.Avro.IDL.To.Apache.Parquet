@@ -1,0 +1,87 @@
+{
+  "type" : "record",
+  "name" : "TestRecord",
+  "namespace" : "org.apache.avro.test",
+  "doc" : "A TestRecord.",
+  "fields" : [ {
+    "name" : "name",
+    "type" : "string",
+    "doc" : "Tests that keywords can also appear in identifiers.",
+    "default" : "foo",
+    "order" : "ignore"
+  }, {
+    "name" : "kind",
+    "type" : {
+      "type" : "enum",
+      "name" : "Kind",
+      "doc" : "A kind of record.",
+      "symbols" : [ "FOO", "BAR", "BAZ" ],
+      "aliases" : [ "org.foo.KindOf" ]
+    },
+    "doc" : "The kind of record.",
+    "order" : "descending"
+  }, {
+    "name" : "status",
+    "type" : {
+      "type" : "enum",
+      "name" : "Status",
+      "symbols" : [ "A", "B", "C" ],
+      "default" : "C"
+    },
+    "doc" : "The status of the record.",
+    "default" : "A"
+  }, {
+    "name" : "hash",
+    "type" : {
+      "type" : "fixed",
+      "name" : "MD5",
+      "doc" : "An MD5 hash.",
+      "size" : 16
+    },
+    "default" : "0000000000000000"
+  }, {
+    "name" : "nullableHash",
+    "type" : [ "null", "MD5" ],
+    "doc" : "A traditional optional field",
+    "default" : null,
+    "aliases" : [ "hash_", "hsh" ]
+  }, {
+    "name" : "value",
+    "type" : "double",
+    "doc" : "These two fields parse correctly, but will brewak (be\nchanged to strings) when serializing the protocol/schema as\nJSON."
+  }, {
+    "name" : "average",
+    "type" : "float",
+    "doc" : "These two fields parse correctly, but will brewak (be\nchanged to strings) when serializing the protocol/schema as\nJSON."
+  }, {
+    "name" : "t",
+    "type" : [ {
+      "type" : "int",
+      "logicalType" : "time-millis"
+    }, "null" ],
+    "default" : 0
+  }, {
+    "name" : "l",
+    "type" : {
+      "type" : "long",
+      "foo.bar" : "bar.foo"
+    },
+    "default" : 0
+  }, {
+    "name" : "a",
+    "type" : {
+      "type" : "array",
+      "items" : "string",
+      "foo.bar.bar" : "foo.bar2"
+    },
+    "doc" : "Arrays (and maps) may also have properties",
+    "default" : [ ]
+  }, {
+    "name" : "prop",
+    "type" : [ "null", "string" ],
+    "default" : null
+  } ],
+  "my-property" : {
+    "key" : 3
+  }
+}

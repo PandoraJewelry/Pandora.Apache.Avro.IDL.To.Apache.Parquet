@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Clean screen
 clear
 
 # Ensure project is clean (ensure no .nupkg exist)
-source ./dotnet-cli-clean.sh
+source ./dotnet-cli-clean.bash
 
 # Ensure project is build (and packed)
-source ./dotnet-cli-build.sh
+source ./dotnet-cli-build.bash
 
 # Push nuget package to nuget.org (ensure ENV VARS are set before)
 source ~/.microsoft/usersecrets/pj/env_vars_nuget_org.sh

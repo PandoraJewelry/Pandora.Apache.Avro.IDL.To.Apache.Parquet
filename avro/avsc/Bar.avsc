@@ -1,0 +1,14 @@
+{
+  "type" : "record",
+  "name" : "Bar",
+  "namespace" : "org.foo",
+  "fields" : [ {
+    "name" : "foo",
+    "type" : {
+      "type" : "record",
+      "name" : "Foo",
+      "namespace" : "org.apache.avro.ipc.specific",
+      "fields" : [ ]
+    }
+  } ]
+}
