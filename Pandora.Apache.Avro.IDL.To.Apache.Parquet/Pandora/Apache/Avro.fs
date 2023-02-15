@@ -207,7 +207,7 @@ module Avro =
              - map   of 't     => record { key : string, value : 't                    }
              - union of 't seq => record {               type0 : 't_0, …, typeN : 't_n }
              
-             > NOTE: An array of records, should be flattened to the record.
+             > NOTE: An array of records, should be flattened to a record.
              > NOTE: All fields in a union MUST be `nullable`, except for (complex) nested types.
           *)
           match rft with

@@ -69,6 +69,7 @@ type EqualsMarkdownTests () =
           }
         )
         |> Seq.toArray
+      
       Assert.True
         ( Seq.isEmpty es && smd = dmd
         )

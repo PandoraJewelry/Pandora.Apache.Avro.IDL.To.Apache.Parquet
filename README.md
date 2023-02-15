@@ -66,11 +66,17 @@ friendly** approach.
 | Newtonsoft.Json                             | James Newton-King              | [MIT License](https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md)
 | Parquet.Net                                 | Ivan G                         | [MIT License](https://github.com/aloneguid/parquet-dotnet/blob/master/LICENSE)
 
+### Pandora.Apache.Avro.IDL.To.Apache.Parquet.Samples
+
+| Dependency | Author | License |
+|---| ---| --- |
+| Apache.Avro                                 | The Apache Software Foundation | [Apache License 2.0](https://github.com/apache/avro/blob/master/LICENSE.txt)
+
 ### Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests
 
 | Dependency | Author | License |
 |---| ---| --- |
-| Microsoft.NET.Test.Sdk                    | Microsoft         | [MIT License](https://github.com/microsoft/vstest/blob/main/LICENSE)
-| coverlet.collector                        | .NET foundation   | [MIT License](https://github.com/coverlet-coverage/coverlet/blob/master/LICENSE)
-| xunit                                     | .NET foundation   | [Apache License 2.0](https://github.com/xunit/xunit/blob/main/LICENSE)
-| xunit.runner.visualstudio                 | .NET foundation   | [Apache License 2.0](https://github.com/xunit/visualstudio.xunit/blob/main/License.txt)
+| Microsoft.NET.Test.Sdk                      | Microsoft         | [MIT License](https://github.com/microsoft/vstest/blob/main/LICENSE)
+| coverlet.collector                          | .NET foundation   | [MIT License](https://github.com/coverlet-coverage/coverlet/blob/master/LICENSE)
+| xunit                                       | .NET foundation   | [Apache License 2.0](https://github.com/xunit/xunit/blob/main/LICENSE)
+| xunit.runner.visualstudio                   | .NET foundation   | [Apache License 2.0](https://github.com/xunit/visualstudio.xunit/blob/main/License.txt)

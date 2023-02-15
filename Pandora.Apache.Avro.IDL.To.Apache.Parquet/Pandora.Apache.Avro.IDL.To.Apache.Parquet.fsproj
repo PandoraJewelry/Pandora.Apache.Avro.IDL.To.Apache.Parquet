@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.11.6</Version>
+    <Version>0.11.18</Version>
     <Authors>Pandora A/S</Authors>
     <Company>Pandora A/S</Company>
     <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
@@ -13,6 +13,7 @@
     <PackageId>Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageId>
     <PackageTags>pandorajewelry;pandora;jewelry;apache;avro;idl;parquet;kafka;spark;azure;databricks;deltalake;delta;lake</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.jpg</PackageIcon>
     <PackageProjectUrl>https://github.com/PandoraJewelry/Pandora.Apache.Avro.IDL.To.Apache.Parquet</PackageProjectUrl>
     <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -20,7 +21,8 @@
   
   <ItemGroup>
     <None Include="..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\README.md"  Pack="true" PackagePath="\" />
+    <None Include="..\icon.jpg"   Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -23,6 +23,9 @@ module DeltaLake =
     [<RequireQualifiedAccess>]
     module Schema =
       
+      open Parquet.Data
+      open Parquet.Schema
+      
       [<RequireQualifiedAccess>]
       module Type =
         
@@ -56,14 +59,13 @@ module DeltaLake =
           | "double"                   -> "double"
           | "decimal"                  -> "decimal"
           | "string"                   -> "string"
+          | "date"                     -> "date"
           | "datetimeoffset"           -> "timestamp"
-          //| "timespan"                 -> "integer"
           | "timespan"                 -> "long"
-          (* NOTE: We can't specify `unspecified` as `null` *)
+          (* NOTE: We can't specify `unspecified` as `null` so we rely on an nullable string *)
           | "unspecified"              -> "string"
           | "int96"
           | "interval"    as otherwise
-          //| "unspecified" as otherwise
           |                  otherwise ->
             otherwise
             |> sprintf "Azure.Databricks.Delta.JSONL.Schema.Type.fromParquet > otherwise: %s"
@@ -124,7 +126,7 @@ module DeltaLake =
             [<field: DataMember(Name="metadata")>]
             metadata : EmptyObj
           }
-        let internal init name ``type`` nullable =
+        let internal init name nullable ``type`` =
           { name     = name
             ``type`` = ``type``
             nullable = nullable
@@ -139,14 +141,29 @@ module DeltaLake =
           fields   : Field.t seq
         }
       
-      let init (logger:ILogger) fs =
+      let init (logger:ILogger) (dfs:DataField seq) =
+        (* NOTE: Declaring Schema
+           - https://github.com/elastacloud/parquet-dotnet/blob/master/doc/schema.md#dates
+           - https://github.com/elastacloud/parquet-dotnet/blob/master/src/Parquet/Data/Schema/DataField.cs
+           - https://github.com/elastacloud/parquet-dotnet/blob/master/src/Parquet/Data/Schema/DateTimeDataField.cs
+           - https://github.com/elastacloud/parquet-dotnet/blob/master/src/Parquet/Data/DataType.cs
+           - https://github.com/elastacloud/parquet-dotnet/blob/master/src/Parquet/Data/DateTimeFormat.cs
+        *)
         try
           { ``type`` = "struct"
             fields   =
-              fs
+              dfs
               |> Seq.map (
-                fun (name, ``type``, nullable, isArray) ->
-                  Field.init name (Type.fromParquet isArray ``type``) nullable
+                fun df ->
+                  let dt =
+                    if DataType.DateTimeOffset = df.DataType &&
+                       DateTimeFormat.Date = (df :?> DateTimeDataField).DateTimeFormat then
+                      "date"
+                    else
+                      df.DataType.ToString().ToLowerInvariant()
+                  
+                  Type.fromParquet df.IsArray dt
+                  |> Field.init df.Name df.HasNulls
               )
           }
           |> JSON.serialize false true
@@ -279,10 +296,26 @@ module DeltaLake =
     
       [<RequireQualifiedAccess>]
       module File =
+
+        [<RequireQualifiedAccess>]
+        module PartitionValue =
+        
+          (* # Sample
+            {
+              "pj_pds":"2023-02-05"
+            }
+          *)
+
+          [<DataContract>]
+          type t =
+            { [<field: DataMember(Name="pj_pds")>]
+              pj_pds : string
+            }
         
         (* # Sample
           {
             "path": "20230116T0708407441014Z_9c662078-056b-4399-90b2-607ad75d5ec5.snappy.parquet",
+            "partitionValues": {"pj_pds":"2023-02-05"}
             "size": 1729,
             "modificationTime": 1671030572000,
             "dataChange": true
@@ -293,6 +326,8 @@ module DeltaLake =
         type t =
           { [<field: DataMember(Name="path")>]
             path             : string
+            [<field: DataMember(Name="partitionValues")>]
+            partitionValues  : PartitionValue.t
             [<field: DataMember(Name="size")>]
             size             : int64
             [<field: DataMember(Name="modificationTime")>]
@@ -300,6 +335,8 @@ module DeltaLake =
             [<field: DataMember(Name="dataChange")>]
             dataChange       : bool
           }
+
+        let dsMask = "yyyy-MM-dd"
           
         let internal init path size timestamp =
           let dts =
@@ -308,11 +345,14 @@ module DeltaLake =
             |> int64
           let pp =
             Path.Combine
-              ( timestamp.ToString("yyyy-MM-dd")
+              ( timestamp.ToString(dsMask)
                 |> sprintf "pj_pds=%s"
               , path
               )
           { path             = pp
+            partitionValues  =
+              { PartitionValue.pj_pds = timestamp.ToString(dsMask)
+              }
             size             = size
             modificationTime = dts
             dataChange       = true
@@ -340,8 +380,8 @@ module DeltaLake =
         }
     
     type t =
-      Protocol.t   *
-      MetaData.t   *
+      Protocol.t *
+      MetaData.t *
       Add.t
   
     let init (logger:ILogger) timestamp size schema path =
@@ -374,19 +414,26 @@ module DeltaLake =
           , sprintf "%s.json" i
           )
       use ms = new MemoryStream ()
-      use sw = new StreamWriter (ms, UTF8.noBOM)
-      seq {
-        yield JSON.serialize false true proto
-        yield JSON.serialize false true meta
-        yield JSON.serialize false true file
-      }
-      |> Seq.iter(
-        fun x ->
-          sw.Write x
-          sw.Flush()
-      )
+      let _ =
+        (* Add to ensure .Dispose is called *)
+        use sw = new StreamWriter (ms, UTF8.noBOM)
+        seq {
+          yield JSON.serialize false true proto
+          yield JSON.serialize false true meta
+          yield JSON.serialize false true file
+        }
+        |> Seq.iter(
+          fun json ->
+            sw.WriteLine json
+            sw.Flush()
+        )
+        sw.Close()
       let bs = ms.ToArray()
+      (* NOTE:
+         «Because any data written to a MemoryStream object is written into RAM, this method is redundant.»
+         - https://learn.microsoft.com/en-us/dotnet/api/system.io.memorystream.flush#remarks
       ms.Flush()
+      *)
       new KeyValuePair<string, byte[]>
         ( f
         , bs

@@ -410,7 +410,7 @@ module Parquet =
     
     type t = (string, Table) Dict.t
     
-    let private uuid name =
+    let private uuid nullable name =
       // Parquet Logical Type Definitions > UUID:
       // - https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#uuid
       //
@@ -419,7 +419,7 @@ module Parquet =
       new DataField
         ( name     = name
         , dataType = DataType.ByteArray
-        , hasNulls = false
+        , hasNulls = nullable
         ) :> Field
     
     let private label name =
@@ -430,7 +430,7 @@ module Parquet =
         , isArray  = false
         ) :> Field
     
-    let private timestamp time name =
+    let private timestamp nullable time name =
       new DateTimeDataField
         ( name     = name
         , format   =
@@ -438,30 +438,30 @@ module Parquet =
               DateTimeFormat.DateAndTime
             else
               DateTimeFormat.Date
-        , hasNulls = false
+        , hasNulls = nullable
         ) :> Field
     
     let private uid () =
       // Random UUID, as bytes
-      uuid "pj_uid"
-    
-    let private sha () =
-      // Use the 32 bytes of the SHA256 hash of the raw AVRO payload
-      uuid "pj_sha"
-    
-    let private dts () =
-      (* Date-time stamp *)
-      timestamp true "pj_dts"
+      uuid false "pj_uid"
     
     let private pds () =
       (* Partition date stamp:
          * The Foundation of Your Lakehouse Starts With Delta Lake > Generated columns:
          - https://www.databricks.com/blog/2021/12/01/the-foundation-of-your-lakehouse-starts-with-delta-lake.html
       *)
-      timestamp false "pj_pds"
+      timestamp false false "pj_pds"
+    
+    let private sha () =
+      // Use the 32 bytes of the SHA256 hash of the raw AVRO payload
+      uuid true "pj_sha"
+    
+    let private dts () =
+      (* Date-time stamp *)
+      timestamp true true "pj_dts"
     
     let private pid () =
-      uuid "pj_pid"
+      uuid true "pj_pid"
     
     let private fid () =
       label "pj_fid"
@@ -487,7 +487,7 @@ module Parquet =
         )
       | _________________________ ->
         false
-
+    
     let rec isPrimitive = function
       | Schema.Ast.Type.ARRAY        _
       | Schema.Ast.Type.MAP          _
@@ -619,7 +619,7 @@ module Parquet =
             None
       else
         None
-
+    
     let rec private nestedNamedSchemas = function
       | Schema.Ast.Type.ARRAY  ft
       | Schema.Ast.Type.MAP    ft ->
@@ -635,7 +635,7 @@ module Parquet =
         |> Seq.concat
       | __________________________  ->
         Seq.empty
-
+    
     let private schemaFields isext ons (tab:Schema.Ast.Table.t) =
       let ns =
         match ons with
@@ -657,11 +657,7 @@ module Parquet =
         )
         |> Seq.choose id
         |> Seq.toList
-      if isext then
-        (* REMARK: If `extended` by `union`, do we need `fid`? Already part of filename *)
-        uid () :: pds () :: pid () :: fid () :: fs
-      else
-        uid () :: pds () :: sha () :: dts () :: fs
+      uid () :: pds () :: sha () :: dts () :: pid () :: fid () :: fs
     
     let update (logger:ILogger) otabs (ast:Schema.Ast.t) =
       try
@@ -716,7 +712,7 @@ module Parquet =
         "Unexpected error at Apache.Parquet.Tables.empty"
         |> Log.error logger ex
         raise ex
-
+    
     let rec private primitive2obj (v:obj) (t:Schema.Ast.Type.t) =
       if null = v then 
         v
@@ -759,7 +755,7 @@ module Parquet =
           | Schema.Ast.Type.ARRAY  _ as otherwise ->
             sprintf "Parquet.Tables.primitive2obj:\n-Type: %A\n-Value: %A" otherwise v
             |> failwith
-
+    
     let private compUnionSchemaTypes a b =
       match a, b with
         (* NOTE: We can't extract the `precision` with `reflection` *)
@@ -768,7 +764,7 @@ module Parquet =
           osa = osb
         | ___________________________________________________________________________________ ->
           a = b
-
+    
     let rec populate
       (logger:ILogger)
       (dto:DateTimeOffset)
@@ -829,14 +825,14 @@ module Parquet =
               match avro.TryGetValue key with
                 | (true,  v) ->
                   match kv.Value with
-                    | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.ARRAY) ->
+                    | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.ARRAY)       ->
                       popuArray logger dto uid key ast (v :?> IEnumerable<_>)       fqdn tables
-                    | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.MAP)   ->
+                    | Schema.Ast.Type.RECORD (fqdn, Some Schema.Ast.Type.Transformation.MAP)         ->
                       popuMap   logger dto uid key ast (v :?> Dictionary<string,_>) fqdn tables
                     | Schema.Ast.Type.RECORD (fqdn, Some (Schema.Ast.Type.Transformation.UNION len)) ->
                       popuUnion logger dto uid key ast  v                           fqdn tables len
                     | Schema.Ast.Type.ERROR    fqdn
-                    | Schema.Ast.Type.RECORD  (fqdn,_)                                         ->
+                    | Schema.Ast.Type.RECORD  (fqdn,_)                                               ->
                       let (n', ons') =
                         ( Schema.Ast.Fqdn.name          fqdn
                         , Schema.Ast.Fqdn.``namespace`` fqdn
@@ -859,17 +855,18 @@ module Parquet =
               yield  uid
               (* "pj_pds" *)
               yield  dto
-              if not (None = osha) then
-                (* "pj_sha" *)
-                yield Option.defaultValue [| |] osha
-                (* "pj_dts" *)
-                yield dto
-              if not (None = opid) then
-                (* "pj_pid" *)
-                yield Option.defaultValue [| |] opid
-              if not (None = ofid) then
-                (* "pj_fid" *)
-                yield Option.defaultValue String.Empty ofid
+              (* "pj_sha" *)
+              yield  Option.defaultValue Unchecked.defaultof<byte[]> osha
+              (* "pj_dts" *)
+              yield
+                ( match osha with
+                    | Some _ -> dto
+                    | None   -> Unchecked.defaultof<DateTimeOffset>
+                )
+              (* "pj_pid" *)
+              yield  Option.defaultValue Unchecked.defaultof<byte[]> opid
+              (* "pj_fid" *)
+              yield  Option.defaultValue Unchecked.defaultof<string> ofid
               yield! ps
             }
           
@@ -883,7 +880,7 @@ module Parquet =
           "Unexpected error at Apache.Parquet.Tables.populate"
           |> Log.error logger ex
           raise ex
-
+    
     and private popuArray
       (logger:ILogger)
       dto uid key
@@ -908,6 +905,10 @@ module Parquet =
                     yield  Guid.NewGuid().ToByteArray()
                     (* "pj_pds" *)
                     yield  dto
+                    (* "pj_sha" *)
+                    yield Unchecked.defaultof<byte[]>
+                    (* "pj_dts" *)
+                    yield Unchecked.defaultof<DateTimeOffset>
                     (* "pj_pid" *)
                     yield  uid
                     (* "pj_fid" *)
@@ -947,7 +948,7 @@ module Parquet =
           "Unexpected error at Apache.Parquet.Tables.popuArray"
           |> Log.error logger ex
           raise ex
-
+    
     and private popuMap
       (logger:ILogger)
       dto uid key
@@ -974,6 +975,10 @@ module Parquet =
                     yield  uid'
                     (* "pj_pds" *)
                     yield  dto
+                    (* "pj_sha" *)
+                    yield Unchecked.defaultof<byte[]>
+                    (* "pj_dts" *)
+                    yield Unchecked.defaultof<DateTimeOffset>
                     (* "pj_pid" *)
                     yield  uid
                     (* "pj_fid" *)
@@ -1036,7 +1041,7 @@ module Parquet =
           "Unexpected error at Apache.Parquet.Tables.popuMap"
           |> Log.error logger ex
           raise ex
-
+    
     and private popuUnion
       (logger:ILogger)
       dto uid key
@@ -1091,6 +1096,10 @@ module Parquet =
                   yield  Guid.NewGuid().ToByteArray()
                   (* "pj_pds" *)
                   yield  dto
+                  (* "pj_sha" *)
+                  yield Unchecked.defaultof<byte[]>
+                  (* "pj_dts" *)
+                  yield Unchecked.defaultof<DateTimeOffset>
                   (* "pj_pid" *)
                   yield  uid
                   (* "pj_fid" *)
@@ -1186,7 +1195,7 @@ module Parquet =
           "Unexpected error at Apache.Parquet.Tables.popuUnion"
           |> Log.error logger ex
           raise ex
-
+    
     and private union2schemaType (ast:Schema.Ast.t) (ts:Schema.Ast.Type.t seq) (o:obj) =
       match o with
         | :? (System.Byte[])                                           ->
@@ -1279,7 +1288,7 @@ module Parquet =
               |> Schema.Ast.Type.UNION
               |> Some
           )
-
+    
     and private union2schemaTypeHelper (o:obj) =
       match o with
         (* NOTE: Exhaustive pattern-matching only to AVRO IDL types *)
@@ -1371,7 +1380,11 @@ module Parquet =
           |> Async.AwaitTask
           |> Async.RunSynchronously
         let bs = ms.ToArray()
+        (* NOTE:
+           «Because any data written to a MemoryStream object is written into RAM, this method is redundant.»
+           - https://learn.microsoft.com/en-us/dotnet/api/system.io.memorystream.flush#remarks
         ms.Flush()
+        *)
         new KeyValuePair<string, byte[]>
           ( fn
           , bs
