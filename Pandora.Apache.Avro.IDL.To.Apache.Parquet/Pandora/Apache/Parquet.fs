@@ -430,7 +430,7 @@ module Parquet =
         , isArray  = false
         ) :> Field
     
-    let private timestamp nullable time name =
+    let private timestamp time name =
       new DateTimeDataField
         ( name     = name
         , format   =
@@ -438,7 +438,7 @@ module Parquet =
               DateTimeFormat.DateAndTime
             else
               DateTimeFormat.Date
-        , hasNulls = nullable
+        , hasNulls = false
         ) :> Field
     
     let private uid () =
@@ -450,7 +450,7 @@ module Parquet =
          * The Foundation of Your Lakehouse Starts With Delta Lake > Generated columns:
          - https://www.databricks.com/blog/2021/12/01/the-foundation-of-your-lakehouse-starts-with-delta-lake.html
       *)
-      timestamp false false "pj_pds"
+      timestamp false "pj_pds"
     
     let private sha () =
       // Use the 32 bytes of the SHA256 hash of the raw AVRO payload
@@ -458,7 +458,7 @@ module Parquet =
     
     let private dts () =
       (* Date-time stamp *)
-      timestamp true true "pj_dts"
+      timestamp true "pj_dts"
     
     let private pid () =
       uuid true "pj_pid"
@@ -858,11 +858,7 @@ module Parquet =
               (* "pj_sha" *)
               yield  Option.defaultValue Unchecked.defaultof<byte[]> osha
               (* "pj_dts" *)
-              yield
-                ( match osha with
-                    | Some _ -> dto
-                    | None   -> Unchecked.defaultof<DateTimeOffset>
-                )
+              yield dto
               (* "pj_pid" *)
               yield  Option.defaultValue Unchecked.defaultof<byte[]> opid
               (* "pj_fid" *)
@@ -908,7 +904,7 @@ module Parquet =
                     (* "pj_sha" *)
                     yield Unchecked.defaultof<byte[]>
                     (* "pj_dts" *)
-                    yield Unchecked.defaultof<DateTimeOffset>
+                    yield dto
                     (* "pj_pid" *)
                     yield  uid
                     (* "pj_fid" *)
@@ -978,7 +974,7 @@ module Parquet =
                     (* "pj_sha" *)
                     yield Unchecked.defaultof<byte[]>
                     (* "pj_dts" *)
-                    yield Unchecked.defaultof<DateTimeOffset>
+                    yield dto
                     (* "pj_pid" *)
                     yield  uid
                     (* "pj_fid" *)
@@ -1099,7 +1095,7 @@ module Parquet =
                   (* "pj_sha" *)
                   yield Unchecked.defaultof<byte[]>
                   (* "pj_dts" *)
-                  yield Unchecked.defaultof<DateTimeOffset>
+                  yield dto
                   (* "pj_pid" *)
                   yield  uid
                   (* "pj_fid" *)
