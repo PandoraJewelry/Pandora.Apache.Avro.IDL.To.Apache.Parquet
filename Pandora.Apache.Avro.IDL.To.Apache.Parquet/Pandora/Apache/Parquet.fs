@@ -718,7 +718,7 @@ module Parquet =
         v
       else
         match t with
-          | Schema.Ast.Type.NULL         ->
+          | Schema.Ast.Type.NULL                  ->
             null
           | Schema.Ast.Type.BOOLEAN
           | Schema.Ast.Type.INT
@@ -727,19 +727,19 @@ module Parquet =
           | Schema.Ast.Type.DOUBLE
           | Schema.Ast.Type.BYTES
           | Schema.Ast.Type.STRING
-          | Schema.Ast.Type.TIME_MS ->
+          | Schema.Ast.Type.TIME_MS               ->
             v
-          | Schema.Ast.Type.DECIMAL _  ->
+          | Schema.Ast.Type.DECIMAL _             ->
             v :?> Avro.AvroDecimal
             |> Avro.AvroDecimal.ToDecimal             :> obj
-          | Schema.Ast.Type.ENUM    _    ->
+          | Schema.Ast.Type.ENUM    _             ->
             (v :?> Avro.Generic.GenericEnum).Value    :> obj
-          | Schema.Ast.Type.FIXED   _    ->
+          | Schema.Ast.Type.FIXED   _             ->
             (v :?> Avro.Generic.GenericFixed).Value   :> obj
           | Schema.Ast.Type.DATE
-          | Schema.Ast.Type.TIMESTAMP_MS ->
+          | Schema.Ast.Type.TIMESTAMP_MS          ->
             new DateTimeOffset(v :?> System.DateTime) :> obj
-          | Schema.Ast.Type.UNION   nt    ->
+          | Schema.Ast.Type.UNION   nt            ->
             (* NOTE: If a `union` is passed, we know it's a nullable-primitive *)
             nt
             |> Seq.filter (

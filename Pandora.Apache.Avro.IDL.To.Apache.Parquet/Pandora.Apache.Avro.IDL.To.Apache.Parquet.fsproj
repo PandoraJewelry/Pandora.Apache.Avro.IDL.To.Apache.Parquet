@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.11.19</Version>
+    <Version>0.11.21</Version>
     <Authors>Pandora A/S</Authors>
     <Company>Pandora A/S</Company>
     <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
