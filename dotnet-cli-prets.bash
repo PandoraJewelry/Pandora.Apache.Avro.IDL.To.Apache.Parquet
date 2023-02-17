@@ -6,6 +6,9 @@ clear
 # Change to dir containing the `avrogen` tool
 cd ./Pandora.Apache.Avro.IDL.To.Apache.Parquet.Samples/
 
+# Ensure the needed tool is restored
+dotnet tool restore
+
 # Generate C# files from Schema files
 for f in $(find ../avro/avsc/ -name "*.avsc")
 do
