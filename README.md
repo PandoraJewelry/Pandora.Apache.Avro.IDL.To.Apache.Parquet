@@ -1,5 +1,50 @@
 # Pandora.Apache.Avro.IDL.To.Apache.Parquet
 
+## Table of Contents
+
+0. [Background][toc-background]
+
+0. [How to use the library][toc-]
+
+   0. [Package dependencies][toc-package-imports]
+   
+   0. [Package imports][toc-package-dependencies]
+   
+   0. [Generating random AVRO data][toc-generating-random-avro-data]
+   
+   0. [Logger and DataLakeServiceClient][toc-logger-and-datalakeserviceclient]
+   
+   0. [Loop-logic][toc-loop-logic]
+   
+   0. [Delta-control files (optional)][toc-delta-control-files-optional]
+   
+   0. [Main method][toc-main-method]
+
+0. [Project dependencies][toc-project-dependencies]
+   
+   0. [Library][toc-avroidl2parquet-lib]
+   
+   0. [Samples][toc-avroidl2parquet-samples]
+   
+   0. [Unit Tests][toc-avroidl2parquet-unit-tests]
+
+[toc-background]:                       #background
+
+[toc-package-imports]:                  #package-imports
+[toc-package-dependencies]:             #package-dependencies
+[toc-generating-random-avro-data]:      #generating-random-avro-data
+[toc-logger-and-datalakeserviceclient]: #logger-and-datalakeserviceclient
+[toc-loop-logic]:                       #loop-logic
+[toc-delta-control-files-optional]:     #delta-control-files-optional
+[toc-main-method]:                      #main-method
+
+[toc-project-dependencies]:             #project-dependencies
+[toc-avroidl2parquet-lib]:              #library
+[toc-avroidl2parquet-samples]:          #samples
+[toc-avroidl2parquet-unit-tests]:       #unit-tests
+
+[toc-back-to-toc]: #table-of-contents
+
 ## Background
 
 Currently, when working with [Apache Kafka®][apache-kafka] and [Azure
@@ -42,6 +87,8 @@ friendly** approach.
 |:--:| 
 | Figure 3: [Green Software Foundation][green-software-foundation] with the Linux Foundation to put sustainability at the core of software engineering |
 
+[Back to TOC][toc-back-to-toc]
+
 [apache-kafka]:                               https://kafka.apache.org/
 [azure-databricks]:                           https://azure.microsoft.com/en-us/products/databricks/
 [apache-spark]:                               https://spark.apache.org/
@@ -60,6 +107,8 @@ friendly** approach.
 In order to show how to use the library to convert `AVRO` nested data to
 `PARQUET` files, we will rely on some succinct demo script snippets. The fully
 working script is available at: [./demo/avroidl2parquet.fsx][demo-script].
+
+[Back to TOC][toc-back-to-toc]
 
 [demo-script]: ./demo/avroidl2parquet.fsx
 
@@ -91,6 +140,8 @@ Furthermore, we will also need:
 And finally, we will be using a local `dotnet` project, containing some of the
 `AVRO IDL` test samples, taken from [Apache AVRO on GitHub][avro-github].
 
+[Back to TOC][toc-back-to-toc]
+
 [avro-github]: https://github.com/apache/avro/tree/master/lang/java/compiler/src/test/idl
 
 ### Package imports
@@ -114,6 +165,8 @@ open Pandora.Utils
 open org.apache.avro
 open org.apache.avro.test
 ```
+
+[Back to TOC][toc-back-to-toc]
 
 ### Generating random AVRO data
 
@@ -214,6 +267,8 @@ module Test =
     cases[i] ()
 ```
 
+[Back to TOC][toc-back-to-toc]
+
 ### Logger and DataLakeServiceClient
 
 As our library require to pass an `ILogger` we can easily create one as:
@@ -241,7 +296,9 @@ let dlsc =
       )
 ```
 
-### Loop-logic 
+[Back to TOC][toc-back-to-toc]
+
+### Loop-logic
 
 For the recursive and asynchronous `loop` logic, we will pass the created
 logger, a cancellation token and the number of data elements to create of a
@@ -433,6 +490,8 @@ tabs
 |:--:| 
 | Figure 4: Parquet folder structure on Azure Table Storage |
 
+[Back to TOC][toc-back-to-toc]
+
 ### Delta-control files (optional)
 
 With the code above, we will only add `PARQUET` files to the Azure Table
@@ -611,6 +670,8 @@ with
 |:--:| 
 | Figure 5: JSONL control files in _delta_log folder on Azure Table Storage |
 
+[Back to TOC][toc-back-to-toc]
+
 [optimistic-concurrency]: https://azure.microsoft.com/en-us/blog/managing-concurrency-in-microsoft-azure-storage-2/
 
 ### Main method
@@ -672,11 +733,15 @@ let _ =
 As mentioned above, the fully working script is available at:
 [./demo/avroidl2parquet.fsx][demo-script].
 
+[Back to TOC][toc-back-to-toc]
+
 [demo-script]: ./demo/avroidl2parquet.fsx
 
 ## Project dependencies
 
-### Pandora.Apache.Avro.IDL.To.Apache.Parquet
+[Back to TOC][toc-back-to-toc]
+
+### Library
 
 | Dependency | Author | License |
 |---| ---| --- |
@@ -685,13 +750,17 @@ As mentioned above, the fully working script is available at:
 | Newtonsoft.Json                             | James Newton-King              | [MIT License](https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md)
 | Parquet.Net                                 | Ivan G                         | [MIT License](https://github.com/aloneguid/parquet-dotnet/blob/master/LICENSE)
 
-### Pandora.Apache.Avro.IDL.To.Apache.Parquet.Samples
+[Back to TOC][toc-back-to-toc]
+
+### Samples
 
 | Dependency | Author | License |
 |---| ---| --- |
 | Apache.Avro                                 | The Apache Software Foundation | [Apache License 2.0](https://github.com/apache/avro/blob/master/LICENSE.txt)
 
-### Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests
+[Back to TOC][toc-back-to-toc]
+
+### Unit Tests
 
 | Dependency | Author | License |
 |---| ---| --- |
@@ -699,3 +768,5 @@ As mentioned above, the fully working script is available at:
 | coverlet.collector                          | .NET foundation   | [MIT License](https://github.com/coverlet-coverage/coverlet/blob/master/LICENSE)
 | xunit                                       | .NET foundation   | [Apache License 2.0](https://github.com/xunit/xunit/blob/main/LICENSE)
 | xunit.runner.visualstudio                   | .NET foundation   | [Apache License 2.0](https://github.com/xunit/visualstudio.xunit/blob/main/License.txt)
+
+[Back to TOC][toc-back-to-toc]
