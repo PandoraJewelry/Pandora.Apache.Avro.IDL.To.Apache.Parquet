@@ -4,7 +4,7 @@
 
 0. [Background][toc-background]
 
-0. [How to use the library][toc-]
+0. [How to use the library][toc-how-to-use-the-library]
 
    0. [Package dependencies][toc-package-imports]
    
@@ -30,6 +30,7 @@
 
 [toc-background]:                       #background
 
+[toc-how-to-use-the-library]:           #how-to-use-the-library
 [toc-package-imports]:                  #package-imports
 [toc-package-dependencies]:             #package-dependencies
 [toc-generating-random-avro-data]:      #generating-random-avro-data
