@@ -291,7 +291,6 @@ let rec loop log ct n =
             |> Parquet.Tables.toBytes log dts 
           )
       )
-      |> Seq.sortBy (fun (table, _) -> table.Key)
       |> Seq.iter(
         fun (table, parquet) ->
           let ppath =
