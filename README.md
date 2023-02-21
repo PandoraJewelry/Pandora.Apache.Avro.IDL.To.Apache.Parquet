@@ -6,19 +6,19 @@
 
 0. [How to use the library][toc-how-to-use-the-library]
 
-   i. [Package dependencies][toc-package-imports]
+   1. [Package dependencies][toc-package-imports]
    
-   i. [Package imports][toc-package-dependencies]
+   1. [Package imports][toc-package-dependencies]
    
-   i. [Generating random AVRO data][toc-generating-random-avro-data]
+   1. [Generating random AVRO data][toc-generating-random-avro-data]
    
-   i. [Logger and DataLakeServiceClient][toc-logger-and-datalakeserviceclient]
+   1. [Logger and DataLakeServiceClient][toc-logger-and-datalakeserviceclient]
    
-   i. [Loop-logic][toc-loop-logic]
+   1. [Loop-logic][toc-loop-logic]
    
-   i. [Delta-control files (optional)][toc-delta-control-files-optional]
+   1. [Delta-control files (optional)][toc-delta-control-files-optional]
    
-   i. [Main method][toc-main-method]
+   1. [Main method][toc-main-method]
 
 0. [Project dependencies][toc-project-dependencies]
    
