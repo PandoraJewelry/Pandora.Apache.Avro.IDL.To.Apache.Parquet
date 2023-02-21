@@ -497,7 +497,7 @@ tabs
 )
 ```
 
-where we ensure that a `_delta_log` folder exists an is populated by our
+where we ensure that a `_delta_log` folder exists and is populated by our
 `control` function which takes: the logger, the cancellation token, the
 date-timestamp, the parquet filename & bytes key-value pair, the table schema
 and the `_delta_log` folder path.
