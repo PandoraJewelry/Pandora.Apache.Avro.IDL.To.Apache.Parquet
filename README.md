@@ -55,7 +55,7 @@ friendly** approach.
 [medallion-lakehouse-architecture-data-mesh]: https://www.databricks.com/glossary/medallion-architecture
 [green-software-foundation]:                  https://blogs.microsoft.com/blog/2021/05/25/accenture-github-microsoft-and-thoughtworks-launch-the-green-software-foundation-with-the-linux-foundation-to-put-sustainability-at-the-core-of-software-engineering/
 
-## How to use
+## How to use the library
 
 In order to show how to use the library to convert `AVRO` nested data to
 `PARQUET` files, we will rely on some succinct demo script snippets. The fully
