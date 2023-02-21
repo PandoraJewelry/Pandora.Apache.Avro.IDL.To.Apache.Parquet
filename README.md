@@ -22,11 +22,11 @@
 
 0. [Project dependencies][toc-project-dependencies]
    
-   0. [Library][toc-avroidl2parquet-lib]
+   1. [Library][toc-avroidl2parquet-lib]
    
-   0. [Samples][toc-avroidl2parquet-samples]
+   1. [Samples][toc-avroidl2parquet-samples]
    
-   0. [Unit Tests][toc-avroidl2parquet-unit-tests]
+   1. [Unit Tests][toc-avroidl2parquet-unit-tests]
 
 [toc-background]:                       #background
 
