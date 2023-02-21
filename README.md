@@ -504,7 +504,7 @@ and the `_delta_log` folder path.
 
 The first thing we need to do, is to find the next index to be used in the delta
 lake. It's mandatory that the naming of the sequence of control files is uniform
-with no gaps. Once we have the found the next index in the sequence, we will
+with no gaps. Once we have found the next index in the sequence, we will
 generate a `JSONL` control file and we will try to upload it. As the Azure Table
 Storage relies on [optimistic concurrency][optimistic-concurrency], other
 process might have added the next control file in the sequence. Therefore, we
