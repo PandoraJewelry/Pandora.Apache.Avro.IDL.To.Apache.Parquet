@@ -338,7 +338,7 @@ and we then transform them to `PARQUET` tables:
 )
 ```
 
-> **NOTE**: If a given schema is already in the `ast`, we will skip it, as we
+> **NOTE**: If a given schema is already in the `AST`, we will skip it, as we
 > only parsing once a given `AVRO IDL` schema to a `PARQUET` schema.
 
 Once we have generated the `PARQUET` tables, we will transform them to `bytes`
