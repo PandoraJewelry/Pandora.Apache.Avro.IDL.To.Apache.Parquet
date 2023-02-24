@@ -613,7 +613,7 @@ module Avro =
               ( nr2r
               , Parquet.Schema.Ast.Type.RECORD
                   ( fqdn
-                  , None
+                  , Some Parquet.Schema.Ast.Type.Transformation.NULLABLE
                   )
                 |> Result.Ok
               )

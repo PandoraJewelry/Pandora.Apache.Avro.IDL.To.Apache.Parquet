@@ -5,6 +5,10 @@
     <IsPackable>false</IsPackable>
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <WarningsAsErrors>25,26</WarningsAsErrors>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Tests/Ast/EqualsMarkdownTests.fs" />

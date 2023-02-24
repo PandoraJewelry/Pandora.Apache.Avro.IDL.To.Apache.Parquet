@@ -44,6 +44,7 @@ module Parquet =
         module Transformation =
           
           type t =
+            | NULLABLE
             | ARRAY
             | MAP
             | UNION of len:int
@@ -94,7 +95,6 @@ module Parquet =
           *)
           | MAP   of t
           (* Union types are denoted as union { typeA, typeB, typeC, ... }. *)
-          //| UNION of t seq
           | UNION of t array
           
           (* # NAMED SCHEMA TYPES *)
