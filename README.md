@@ -72,7 +72,7 @@ file). This will allow to merge both the **bronze** and **silver** layers
 (_full, raw and history of each dataset combined with defined structure,
 enforced schemas as well validated and deduplicated data_), to make it easier
 for data engineers/scientists and business analysts to combine data with already
-known logic (`SQL joins`).
+known logic (`SQL joins`) and tools.
 
 | ![Azure Databricks notebook](docs/pictures/databricks-python-notebook-sql-cell.png) | 
 |:--:| 
