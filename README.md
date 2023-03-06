@@ -836,9 +836,8 @@ let logger () =
 
 ### isNullable and fieldToType
 
-In order to represent correctly the [ER-diagram cardinality and
-ordinality][lucidchart-cardinality-and-ordinality], we will need to use the
-following two functions:
+In order to represent correctly the _ER-diagram cardinality and ordinality_, we
+will need to use the following two functions:
 
 ```fsharp
 let isNullable = function
@@ -906,7 +905,7 @@ let rec fieldToType = function
 
 | ![ER-diagram cardinality and ordinality](docs/pictures/demo-erd-notation.png) | 
 |:--:| 
-| Figure 6: ER-diagram cardinality and ordinality |
+| Figure 6: [ER-diagram cardinality and ordinality][lucidchart-cardinality-and-ordinality] |
 
 [Back to TOC][toc-back-to-toc]
 
