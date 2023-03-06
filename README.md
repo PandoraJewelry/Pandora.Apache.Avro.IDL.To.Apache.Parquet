@@ -908,6 +908,8 @@ let rec fieldToType = function
 |:--:| 
 | Figure 6: ER-diagram cardinality and ordinality |
 
+[Back to TOC][toc-back-to-toc]
+
 [lucidchart-cardinality-and-ordinality]: https://www.lucidchart.com/pages/ER-diagram-symbols-and-meaning?usecase=erd#section_2
 
 ### Iterating over local AVSC files
@@ -930,6 +932,8 @@ Directory.GetFiles
 
 > **NOTE**: As you can see from above, it's very easy to iterate over all `AVSC`
 > files in the folder.
+
+[Back to TOC][toc-back-to-toc]
 
 [interop-avsc]: ./avro/avsc/Interop.avsc
 
