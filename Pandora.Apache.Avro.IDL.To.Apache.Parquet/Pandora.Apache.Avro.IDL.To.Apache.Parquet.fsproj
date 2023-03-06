@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.11.22</Version>
+    <Version>0.11.26</Version>
     <Authors>Pandora A/S</Authors>
     <Company>Pandora A/S</Company>
     <Product>Pandora.Apache.Avro.IDL.To.Apache.Parquet</Product>
@@ -36,6 +36,11 @@
     <None Include="..\LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
     <None Include="..\README.md"  Pack="true" PackagePath="\" />
     <None Include="..\icon.jpg"   Pack="true" PackagePath="\" />
+    <!-- NOTE: Adding images does NOT work
+    <None Include="..\docs\pictures\delta-lake-medallion-architecture-2.jpeg" Pack="true" PackagePath="docs\pictures\delta-lake-medallion-architecture-2.jpeg" />
+    # References
+    # - https://learn.microsoft.com/en-us/nuget/nuget-org/package-readme-on-nuget-org
+    -->
   </ItemGroup>
 
   <ItemGroup>

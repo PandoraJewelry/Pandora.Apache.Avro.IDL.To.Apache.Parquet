@@ -6,9 +6,9 @@
 
 0. [How to use the library][toc-how-to-use-the-library]
 
-   1. [Package dependencies][toc-package-imports]
+   1. [Package dependencies][toc-package-imports-a2p]
    
-   1. [Package imports][toc-package-dependencies]
+   1. [Package imports][toc-package-dependencies-a2p]
    
    1. [Generating random AVRO data][toc-generating-random-avro-data]
    
@@ -19,6 +19,22 @@
    1. [Delta-control files (optional)][toc-delta-control-files-optional]
    
    1. [Main method][toc-main-method]
+
+0. [How to contribute][toc-how-to-contribute]
+
+   1. [Package dependencies][toc-package-imports-a2d]
+   
+   1. [Package imports][toc-package-dependencies-a2d]
+   
+   1. [Logger][toc-logger]
+   
+   1. [isNullable and fieldToType][toc-isnullable-and-fieldtotype]
+   
+   1. [Iterating over local AVSC files][toc-iterating-over-local-avsc-files]
+
+   1. [Generate directed graphs][toc-generate-directed-graphs]
+
+   1. [Generate SVG and PNG files][toc-generate-svg-and-png-files]
 
 0. [Project dependencies][toc-project-dependencies]
    
@@ -31,13 +47,22 @@
 [toc-background]:                       #background
 
 [toc-how-to-use-the-library]:           #how-to-use-the-library
-[toc-package-imports]:                  #package-imports
-[toc-package-dependencies]:             #package-dependencies
+[toc-package-imports-a2p]:              #package-imports-a2p
+[toc-package-dependencies-a2p]:         #package-dependencies-a2p
 [toc-generating-random-avro-data]:      #generating-random-avro-data
 [toc-logger-and-datalakeserviceclient]: #logger-and-datalakeserviceclient
 [toc-loop-logic]:                       #loop-logic
 [toc-delta-control-files-optional]:     #delta-control-files-optional
 [toc-main-method]:                      #main-method
+
+[toc-how-to-contribute]:                #how-to-contribute
+[toc-package-imports-a2d]:              #package-imports-a2d
+[toc-package-dependencies-a2d]:         #package-dependencies-a2d
+[toc-logger]:                           #logger
+[toc-isnullable-and-fieldtotype]:       #isnullable-and-fieldtotype
+[toc-iterating-over-local-avsc-files]:  #iterating-over-local-avsc-files
+[toc-generate-directed-graphs]:         #generate-directed-graphs
+[toc-generate-svg-and-png-files]:       #generate-svg-and-png-files
 
 [toc-project-dependencies]:             #project-dependencies
 [toc-avroidl2parquet-lib]:              #library
@@ -107,13 +132,13 @@ friendly** approach.
 
 In order to show how to use the library to convert `AVRO` nested data to
 `PARQUET` files, we will rely on some succinct demo script snippets. The fully
-working script is available at: [./demo/avroidl2parquet.fsx][demo-script].
+working script is available at: [./demo/avroidl2parquet.fsx][demo-script-a2p].
 
 [Back to TOC][toc-back-to-toc]
 
-[demo-script]: ./demo/avroidl2parquet.fsx
+[demo-script-a2p]: ./demo/avroidl2parquet.fsx
 
-### Package dependencies
+### Package dependencies (A2P)
 
 ```fsharp
 #r "nuget: Azure.Storage.Files.DataLake,              12.12.01"
@@ -145,7 +170,7 @@ And finally, we will be using a local `dotnet` project, containing some of the
 
 [avro-github]: https://github.com/apache/avro/tree/master/lang/java/compiler/src/test/idl
 
-### Package imports
+### Package imports (A2P)
 
 Once we have added the packages to our script, we can then import the following
 `namespaces`:
@@ -732,11 +757,411 @@ let _ =
 ```
 
 As mentioned above, the fully working script is available at:
-[./demo/avroidl2parquet.fsx][demo-script].
+[./demo/avroidl2parquet.fsx][demo-script-a2p].
 
 [Back to TOC][toc-back-to-toc]
 
-[demo-script]: ./demo/avroidl2parquet.fsx
+[demo-script-a2p]: ./demo/avroidl2parquet.fsx
+
+## How to contribute
+
+As this library is **open-source**, we would like for others to help us to add
+functionality. Therefore, we are providing a sample, where we showcase how by
+having access to the [Abstract Syntax Tree (AST)][abstract-syntax-tree], we can
+easily create [Entity Relationship (ER)][entity–relationship-diagram] diagrams,
+with the [cardinality][cardinality-data-modeling] (numerical) relationship
+between rows of one table and rows in another, in the [Graphviz
+DOT][graphviz-dot] language. The fully working script is available at:
+[./demo/avroidl2dot.fsx][demo-script-a2d].
+
+[Back to TOC][toc-back-to-toc]
+
+[abstract-syntax-tree]:        https://en.wikipedia.org/wiki/Abstract_syntax_tree
+[entity–relationship-diagram]: https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model
+[cardinality-data-modeling]:   https://en.wikipedia.org/wiki/Cardinality_(data_modeling)
+[graphviz-dot]:                https://graphviz.org/doc/info/lang.html
+[demo-script-a2d]:             ./demo/avroidl2dot.fsx
+
+### Package dependencies (A2D)
+
+```fsharp
+#r "nuget: Microsoft.Extensions.Logging,              7.00.00"
+#r "nuget: Newtonsoft.Json,                          13.00.02"
+#r "nuget: Pandora.Apache.Avro.IDL.To.Apache.Parquet, 0.11.26"
+```
+
+For this demo script, besides our own package, we will need the following
+Microsoft package:
+
+* **Microsoft.Extensions.Logging**: Our library needs an instance of an
+  `ILogger`.
+  
+Furthermore, we will also need:
+* **Newtonsoft.Json**: This package is needed to parse and pass the `AVRO`
+  schema to transform it into a `PARQUET` schema.
+
+[Back to TOC][toc-back-to-toc]
+
+### Package imports (A2D)
+
+Once we have added the packages to our script, we can then import the following
+`namespaces`:
+
+```fsharp
+open System
+open System.IO
+open System.Text
+
+open Microsoft.Extensions.Logging
+
+open Newtonsoft.Json.Linq
+
+open Pandora.Apache
+open Pandora.Utils
+```
+
+[Back to TOC][toc-back-to-toc]
+
+### Logger
+
+As our library require to pass an `ILogger` we can easily create one as:
+
+```fsharp
+let logger () =
+  let lf = new LoggerFactory ()
+  lf.CreateLogger ()
+```
+
+### isNullable and fieldToType
+
+In order to represent correctly the [ER-diagram cardinality and
+ordinality][lucidchart-cardinality-and-ordinality], we will need to use the
+following two functions:
+
+```fsharp
+let isNullable = function
+  | Parquet.Schema.Ast.Type.NULL      ->
+    true
+  | Parquet.Schema.Ast.Type.UNION fts ->
+    ( fts
+      |> Seq.exists (
+        function
+          | Parquet.Schema.Ast.Type.NULL -> true
+          | ____________________________ -> false
+      )
+    ) &&
+    ( fts
+      |> Seq.filter (
+        function
+          | Parquet.Schema.Ast.Type.NULL -> false
+          | ____________________________ -> true
+      )
+      |> Seq.length = 1
+    )
+  | _________________________________ ->
+    false
+
+let rec fieldToType = function
+  (* # PRIMITIVE TYPES *)
+  (* > NOTE: We can't specify `unspecified` as `null` so we rely on an nullable string *)
+  | Parquet.Schema.Ast.Type.NULL           -> "string"
+  | Parquet.Schema.Ast.Type.BOOLEAN        -> "boolean"
+  | Parquet.Schema.Ast.Type.INT            -> "integer"
+  | Parquet.Schema.Ast.Type.LONG           -> "long"
+  | Parquet.Schema.Ast.Type.FLOAT          -> "float"
+  | Parquet.Schema.Ast.Type.DOUBLE         -> "double"
+  | Parquet.Schema.Ast.Type.BYTES          -> "binary"
+  | Parquet.Schema.Ast.Type.STRING         -> "string"
+  (* # LOGICAL TYPES *)
+  | Parquet.Schema.Ast.Type.DATE           -> "date"
+  | Parquet.Schema.Ast.Type.DECIMAL   _    -> "decimal"
+  | Parquet.Schema.Ast.Type.TIMESTAMP_MS   -> "timestamp"
+  | Parquet.Schema.Ast.Type.TIME_MS        -> "long"
+  (* # COMPLEX TYPES *)
+  (* > NOTE: Array and Maps are re-factored to a Record type *)
+  | Parquet.Schema.Ast.Type.ARRAY     _
+  | Parquet.Schema.Ast.Type.MAP       _    -> String.Empty
+  | Parquet.Schema.Ast.Type.UNION     ts   ->
+    ts
+    |> Seq.filter (
+      function
+        | Parquet.Schema.Ast.Type.NULL     -> false
+        | ____________________________     -> true
+    )
+    |> Seq.head
+    |> fieldToType
+  (* # NAMED SCHEMA TYPES *)
+  | Parquet.Schema.Ast.Type.ENUM      fqdn ->
+    fqdn
+    |> Parquet.Schema.Ast.Fqdn.toString 
+    |> sprintf "string (enum = %s)"
+  (* > NOTE: Errors are Record types *)
+  | Parquet.Schema.Ast.Type.ERROR     _    -> String.Empty
+  | Parquet.Schema.Ast.Type.FIXED     _    -> "binary"
+  (* > NOTE: Record types are filtered out of field types *)
+  | Parquet.Schema.Ast.Type.RECORD    _    -> String.Empty
+```
+
+| ![ER-diagram cardinality and ordinality](docs/pictures/demo-erd-notation.png) | 
+|:--:| 
+| Figure 6: ER-diagram cardinality and ordinality |
+
+[lucidchart-cardinality-and-ordinality]: https://www.lucidchart.com/pages/ER-diagram-symbols-and-meaning?usecase=erd#section_2
+
+### Iterating over local AVSC files
+
+For this demo sample will be limited to a single `AVRO IDL`, which was converted
+to the following `AVSC` [../avro/avsc/Interop.avsc][interop-avsc] file:
+
+```fsharp
+Directory.GetFiles
+  ( Path.Combine
+      ( __SOURCE_DIRECTORY__
+      , @"../avro/avsc/"
+      )
+  // , "*.avsc" // NOTE: Retrieve all AVSC files from the folder
+  , @"Interop.avsc"
+  , SearchOption.TopDirectoryOnly
+  )
+|> …
+```
+
+> **NOTE**: As you can see from above, it's very easy to iterate over all `AVSC`
+> files in the folder.
+
+[interop-avsc]: ./avro/avsc/Interop.avsc
+
+### Generate Directed Graphs
+
+Firstly, we will define the values for the `environment` and the `AST`:
+
+```fsharp
+let env = Parquet.Schema.Ast.Environment.empty ()
+let ast = Parquet.Schema.Ast.empty ()
+```
+
+We will then read the `AVRO` schema from the file:
+
+```fsharp
+let schema = File.ReadAllText f
+```
+
+and we will then transform it to a `PARQUET` schema, which if successfully
+parsed, will will generate a directed graph:
+
+```fsharp
+schema
+|> JToken.Parse
+|> Avro.Schema.toParquetSchema log None env ast
+|> fun (env', ast', es) ->
+  if Seq.isEmpty es then
+    let _ =
+      use fs =
+        new FileStream
+          ( path =
+              Path.Combine
+                ( __SOURCE_DIRECTORY__
+                , @"dots"
+                , Path.GetFileNameWithoutExtension f
+                  |> sprintf "%s.dot" 
+                )
+          , mode = FileMode.OpenOrCreate
+          )
+      use sw =
+        new StreamWriter
+          ( stream   = fs
+          , encoding = UTF8Encoding false
+          )
+      sprintf "digraph er {"
+      |> sw.WriteLine
+
+      sprintf "  /* Graph */"
+      |> sw.WriteLine
+      sprintf "  graph[rankdir=RL, overlap=false, splines=polyline]"
+      |> sw.WriteLine
+      sprintf "  /* Vertices */"
+      |> sw.WriteLine
+      
+      ast'
+      |> Seq.sortBy (fun ts -> Parquet.Schema.Ast.Fqdn.``namespace`` ts.Key)
+      |> Seq.iter (
+        fun ts ->
+          let fqdn = Parquet.Schema.Ast.Fqdn.toString ts.Key
+          let name = fqdn.Replace('.','_')
+          seq {
+            yield
+              ( sprintf "%s [shape=record, label=\"%s|" name fqdn
+              )
+            yield
+              ( seq {
+                  yield "<pj_uid> pj_uid: bytearray (nullable = false)"
+                  yield "<pj_pds> pj_pds: datetimeoffset (nullable = false)"
+                  yield "<pj_sha> pj_sha: bytearray (nullable = true)"
+                  yield "<pj_dts> pj_dts: datetimeoffset (nullable = false)"
+                  yield "<pj_pid> pj_pid: bytearray (nullable = true)"
+                  yield "<pj_fid> pj_fid: string (nullable = true)"
+                  yield!
+                    ( ts.Value
+                      |> Seq.filter (
+                        fun fs ->
+                          match fs.Value with
+                            | Parquet.Schema.Ast.Type.RECORD _ -> false
+                            | ________________________________ -> true
+                      )
+                      |> Seq.sortBy (fun fs -> fs.Key)
+                      |> Seq.map(
+                        fun fs ->
+                          let uid = fs.Key.Replace('.','_')
+                          let typ = fieldToType fs.Value
+                          let fid = 
+                            fs.Key.Replace('.','/')
+                            |> Path.GetFileName
+                          let isn = isNullable fs.Value
+                          sprintf "<%s> %s: %s (nullable = %b)" uid fid typ isn
+                      )
+                    )
+                }
+                |> Seq.reduce (sprintf "%s|%s")
+              )
+            yield
+              ( sprintf "\"]"
+              )
+          }
+          |> Seq.fold ((+)) String.Empty
+          |> sprintf "  %s"
+          |> sw.WriteLine
+      )
+        
+      sprintf "  /* Edges */"
+      |> sw.WriteLine
+        
+      ast'
+      |> Seq.sortBy (fun ts -> Parquet.Schema.Ast.Fqdn.``namespace`` ts.Key)
+      |> Seq.iter (
+        fun ts ->
+          let fqdn = Parquet.Schema.Ast.Fqdn.toString ts.Key
+          let name = fqdn.Replace('.','_')
+          seq {
+            yield!
+              ( ts.Value
+                |> Seq.map (
+                  fun fs ->
+                    match fs.Value with
+                      | Parquet.Schema.Ast.Type.RECORD (fqdn', otrans) ->
+                        Some
+                          ( fs.Key
+                          , fqdn'
+                          , otrans
+                          , isNullable fs.Value
+                          )
+                      | ______________________________________________ ->
+                        None
+                )
+                |> Seq.choose id
+                |> Seq.sortBy (fun (key,_,_,_) -> key)
+                |> Seq.map(
+                  fun (key, fqdn', otrans, nullable) ->
+                    let both = "dir=both"
+                    let head = "arrowhead=none"
+                    let fqdn'' = Parquet.Schema.Ast.Fqdn.toString fqdn'
+                    let name'   = fqdn''.Replace('.','_')
+                    let card =
+                      match otrans with
+                        | Some trans ->
+                          match trans with
+                            | Parquet.Schema.Ast.Type.Transformation.NULLABLE -> "noneteeodot"
+                            | Parquet.Schema.Ast.Type.Transformation.ARRAY
+                            | Parquet.Schema.Ast.Type.Transformation.MAP      -> "invodot"
+                            | Parquet.Schema.Ast.Type.Transformation.UNION  _ ->
+                              if nullable then
+                                "noneteeodot"
+                              else
+                                "noneteetee"
+                        | None       ->
+                          if nullable then
+                            "noneteeodot"
+                          else
+                            "noneteetee"
+                    key.Replace('.','/')
+                    |> Path.GetFileName
+                    |> sprintf "%s:pj_pid -> %s:pj_uid [ %s, %s, arrowtail=%s, label=\"pj_fid = %s\" ];"
+                        name' name
+                        head both
+                        card
+                )
+              )
+          }
+          |> Seq.fold (sprintf "%s\n  %s") String.Empty
+          |> fun cs ->
+            if String.IsNullOrEmpty cs then
+              ()
+            else
+              cs
+              |> sprintf "  %s"
+              |> sw.WriteLine
+      )
+        
+      sprintf "}"
+      |> sw.WriteLine
+              
+      sw.Flush()
+      fs.Flush()
+      sw.Close()
+      fs.Close()
+              
+    ( Date.timestamp                   0
+    , Path.GetFileNameWithoutExtension f
+    )
+    ||> sprintf "%s | net.pandora.avroidl2dot | VERBOSE | DOTS | Created the ER-diagram for: %s"
+    |> Output.stdout
+  else
+    es
+    |> Seq.iter (
+      fun e ->
+        ( Date.timestamp 0
+        , e
+        )
+        ||> sprintf "%s | net.pandora.avroidl2dot | FAILURE | DOTS | Unexpected error:\n- %s"
+        |> Output.stdout
+    )
+```
+
+> **NOTE**: Generated syntax is bound to the `Graphviz DOT` language.
+
+As mentioned above, the fully working script is available at:
+[./demo/avroidl2dot.fsx][demo-script-a2d].
+
+[Back to TOC][toc-back-to-toc]
+
+[demo-script-a2d]: ./demo/avroidl2dot.fsx
+
+### Generate SVG and PNG files
+
+Once the `DOT` files have been generated, then with the `Graphviz` tool, we can
+run the following `bash` script and generate (+vector) image files:
+
+```bash
+echo '# Generate SVG and PNG files from DOT files'
+for f in $(find $dots -name "*.dot")
+do
+    echo "Generating SVG from $f"
+    dot -T svg $f > $f.svg
+    echo "Generating PNG from $f"
+    dot -T png $f > $f.png
+done
+echo
+```
+
+| ![Interop (AVRO IDL) ER-diagram with cardinality and ordinality](docs/pictures/demo-Interop.dot.png) | 
+|:--:| 
+| Figure 7: Interop (AVRO IDL) ER-diagram with cardinality and ordinality|
+
+The fully working `bash` script is available at:
+[./demo/avroidl2dot.bash][demo-script-bash-a2d].
+
+[Back to TOC][toc-back-to-toc]
+
+[demo-script-bash-a2d]: ./demo/avroidl2dot.bash
 
 ## Project dependencies
 

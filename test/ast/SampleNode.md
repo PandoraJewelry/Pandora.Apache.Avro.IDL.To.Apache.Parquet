@@ -8,4 +8,3 @@
 ## FQDN ("SamplePair", Some "org.apache.avro.gen")
 * org.apache.avro.gen.method: RECORD (FQDN ("Method", Some "org.apache.avro.gen"), None)
 * org.apache.avro.gen.node: RECORD (FQDN ("SampleNode", Some "org.apache.avro.gen"), None)
-## FQDN ("node", Some "org.apache.avro.gen")

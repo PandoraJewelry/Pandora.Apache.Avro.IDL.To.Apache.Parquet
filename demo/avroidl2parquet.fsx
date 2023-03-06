@@ -7,7 +7,7 @@
 #r "nuget: Azure.Storage.Files.DataLake,              12.12.01"
 #r "nuget: Microsoft.Extensions.Logging,               7.00.00"
 #r "nuget: Newtonsoft.Json,                           13.00.02"
-#r "nuget: Pandora.Apache.Avro.IDL.To.Apache.Parquet,  0.11.21"
+#r "nuget: Pandora.Apache.Avro.IDL.To.Apache.Parquet,  0.11.26"
 
 // Specify the local Sample DLL file
 #I @"../Pandora.Apache.Avro.IDL.To.Apache.Parquet.Samples/bin/Release/net6.0/"

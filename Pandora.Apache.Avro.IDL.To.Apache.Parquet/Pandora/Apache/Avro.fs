@@ -153,10 +153,17 @@ module Avro =
         match JSON.memberStrValue "name" o with
           | Some uid ->
             let fqdn =
-              Parquet.Schema.Ast.Fqdn.FQDN
-                ( uid
-                , ons'
-                )
+              let t = o :> JToken
+              let rft = Parquet.Schema.Ast.Field.toType ons' env ast t
+              match rft with
+                | Result.Ok (Parquet.Schema.Ast.Type.RECORD (fqdn,_))
+                | Result.Ok (Parquet.Schema.Ast.Type.ERROR   fqdn   ) ->
+                  fqdn
+                | ___________________________________________________ ->
+                  Parquet.Schema.Ast.Fqdn.FQDN
+                    ( uid
+                    , ons'
+                    )
             
             if not (ast.ContainsKey fqdn) then
               ast.[fqdn] <- Parquet.Schema.Ast.Table.empty ()
@@ -786,7 +793,6 @@ module Avro =
         
         match JSON.memberStrValue "name" o', rft' with
           | Some uid, Result.Ok    ft ->
-            
             let fqdn =
               Parquet.Schema.Ast.Fqdn.FQDN
                 ( uid
