@@ -6,7 +6,7 @@
 
 #r "nuget: Microsoft.Extensions.Logging,              7.00.00"
 #r "nuget: Newtonsoft.Json,                          13.00.02"
-#r "nuget: Pandora.Apache.Avro.IDL.To.Apache.Parquet, 0.11.26"
+#r "nuget: Pandora.Apache.Avro.IDL.To.Apache.Parquet, 0.11.27"
 
 #time "on"
 
