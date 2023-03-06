@@ -832,6 +832,8 @@ let logger () =
   lf.CreateLogger ()
 ```
 
+[Back to TOC][toc-back-to-toc]
+
 ### isNullable and fieldToType
 
 In order to represent correctly the [ER-diagram cardinality and
