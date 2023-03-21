@@ -1,9 +1,6 @@
 name: CD
 
 on:
-  # workflow_run:
-  #   workflows: [ CI ]
-  #   types: [ completed ]
   push:
     branches: [ main ]
 
@@ -49,6 +46,3 @@ jobs:
 #
 # Encrypted secrets
 # - https://docs.github.com/en/actions/security-guides/encrypted-secrets
-#
-# Events that trigger workflows > workflow_run
-# - https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
