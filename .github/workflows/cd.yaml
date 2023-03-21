@@ -1,0 +1,51 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [ CI ]
+    types: [ completed ]
+
+jobs:
+  on-success:
+    deploy:
+      runs-on: ubuntu-latest
+  
+      permissions:
+        packages: write
+        contents: read    
+      
+      steps:
+        - uses: actions/checkout@v3
+        - name: Setup .NET Core LTS SDK
+          uses: actions/setup-dotnet@v3
+          with:
+            dotnet-version: '6.0.x'
+        - name: Install dependencies
+          run: |
+            dotnet restore
+        - name: Build
+          run: |
+            dotnet build \
+              --configuration Release \
+              --no-restore
+        - name: Deploy
+          run: |
+            dotnet nuget push \
+              --skip-duplicate \
+              --api-key ${{secrets.NUGET_ORG_KEY}} \
+              --source "https://api.nuget.org/v3/index.json" \
+              "Pandora.Apache.Avro.IDL.To.Apache.Parquet/bin/Release/*.nupkg"
+
+# References
+#
+# Building and testing .NET
+# - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# 
+# Using jobs in a workflow > Defining prerequisite jobs
+# - https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow#defining-prerequisite-jobs
+#
+# Encrypted secrets
+# - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+#
+# Events that trigger workflows > workflow_run
+# - https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run

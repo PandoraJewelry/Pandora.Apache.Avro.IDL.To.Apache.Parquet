@@ -1,4 +1,4 @@
-name: CICD
+name: CI
 
 on:
   pull_request:
@@ -34,39 +34,6 @@ jobs:
             --configuration Release \
             --logger "console;verbosity=detailed" \
             "./Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests.fsproj"
-    
-  deploy:
-    needs: build
-    
-    runs-on: ubuntu-latest
-
-    permissions:
-      packages: write
-      contents: read    
-    
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET Core LTS SDK
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.x'
-        env:
-          NUGET_ORG_KEY: ${{secrets.NUGET_ORG_KEY}}          
-      - name: Install dependencies
-        run: |
-          dotnet restore
-      - name: Build
-        run: |
-          dotnet build \
-            --configuration Release \
-            --no-restore
-      - name: Deploy
-        run: |
-          dotnet nuget push \
-            --skip-duplicate \
-            --api-key $NUGET_ORG_KEY \
-            --source "https://api.nuget.org/v3/index.json" \
-            "Pandora.Apache.Avro.IDL.To.Apache.Parquet/bin/Release/*.nupkg"
 
 # References
 #
