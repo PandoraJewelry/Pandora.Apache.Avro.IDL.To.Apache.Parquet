@@ -1,0 +1,80 @@
+name: CICD
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core LTS SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+      - name: Install dependencies
+        run: |
+          dotnet restore
+      - name: Build
+        run: |
+          dotnet build \
+            --configuration Release \
+            --no-restore
+      - name: Pre-Test (AvroGen AVDL to AVSC)
+        run: |
+          chmod +x ./dotnet-cli-prets.bash
+          ./dotnet-cli-prets.bash
+        shell: bash        
+      - name: Test
+        run: |
+          cd Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests
+          dotnet test \
+            --configuration Release \
+            --logger "console;verbosity=detailed" \
+            "./Pandora.Apache.Avro.IDL.To.Apache.Parquet.Unit.Tests.fsproj"
+    
+  deploy:
+    needs: build
+    
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read    
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core LTS SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+        env:
+          NUGET_ORG_KEY: ${{secrets.NUGET_ORG_KEY}}          
+      - name: Install dependencies
+        run: |
+          dotnet restore
+      - name: Build
+        run: |
+          dotnet build \
+            --configuration Release \
+            --no-restore
+      - name: Deploy
+        run: |
+          dotnet nuget push \
+            --skip-duplicate \
+            --api-key $NUGET_ORG_KEY \
+            --source "https://api.nuget.org/v3/index.json" \
+            "Pandora.Apache.Avro.IDL.To.Apache.Parquet/bin/Release/*.nupkg"
+
+# References
+#
+# Building and testing .NET
+# - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# 
+# Using jobs in a workflow > Defining prerequisite jobs
+# - https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow#defining-prerequisite-jobs
+#
+# Encrypted secrets
+# - https://docs.github.com/en/actions/security-guides/encrypted-secrets
