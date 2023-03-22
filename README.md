@@ -1,5 +1,7 @@
 # Pandora.Apache.Avro.IDL.To.Apache.Parquet
 
+![CI](https://github.com/PandoraJewelry/Pandora.Apache.Avro.IDL.To.Apache.Parquet/actions/workflows/ci.yaml/badge.svg) / ![CD](https://github.com/PandoraJewelry/Pandora.Apache.Avro.IDL.To.Apache.Parquet/actions/workflows/cd.yaml/badge.svg)
+
 ## Table of Contents
 
 0. [Background][toc-background]
