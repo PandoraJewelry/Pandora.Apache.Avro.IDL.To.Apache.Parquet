@@ -293,11 +293,16 @@ let rec loop log ct n =
       )
       |> Seq.iter(
         fun (table, parquet) ->
+          let thash =
+            table.Value.Schema.ToString()
+            |> Hash.SHA256.sum
+          
           let ppath =
             Path.Combine
               ( "AZURE_DATALAKE_DELTA_PATH"
                 |> Environment.GetEnvironmentVariable
               , table.Key.Replace(".", "/")
+              , thash
               , dts.ToString("yyyy-MM-dd")
                 |> sprintf "pj_pds=%s"
               )
@@ -357,6 +362,7 @@ let rec loop log ct n =
               ( "AZURE_DATALAKE_DELTA_PATH"
                 |> Environment.GetEnvironmentVariable
               , table.Key.Replace(".", "/")
+              , thash
               , "_delta_log"
               )
           

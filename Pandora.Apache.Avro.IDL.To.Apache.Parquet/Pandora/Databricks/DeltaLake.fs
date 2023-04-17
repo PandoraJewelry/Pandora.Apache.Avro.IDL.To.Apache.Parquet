@@ -296,7 +296,7 @@ module DeltaLake =
     
       [<RequireQualifiedAccess>]
       module File =
-
+        
         [<RequireQualifiedAccess>]
         module PartitionValue =
         
@@ -305,7 +305,7 @@ module DeltaLake =
               "pj_pds":"2023-02-05"
             }
           *)
-
+          
           [<DataContract>]
           type t =
             { [<field: DataMember(Name="pj_pds")>]
@@ -335,7 +335,7 @@ module DeltaLake =
             [<field: DataMember(Name="dataChange")>]
             dataChange       : bool
           }
-
+        
         let dsMask = "yyyy-MM-dd"
           
         let internal init path size timestamp =

@@ -141,6 +141,7 @@ let _ =
         |> Avro.Schema.toParquetSchema log None env ast
         |> fun (env', ast', es) ->
           if Seq.isEmpty es then
+            let tabs = Parquet.Tables.update log None ast
             let _ =
               use fs =
                 new FileStream
@@ -174,9 +175,12 @@ let _ =
                 fun ts ->
                   let fqdn = Parquet.Schema.Ast.Fqdn.toString ts.Key
                   let name = fqdn.Replace('.','_')
+                  let hash =
+                    tabs.[fqdn].Schema.ToString()
+                    |> Hash.SHA256.sum
                   seq {
                     yield
-                      ( sprintf "%s [shape=record, label=\"%s|" name fqdn
+                      ( sprintf "%s [shape=record, label=\"%s (%s)|" name fqdn hash
                       )
                     yield
                       ( seq {
