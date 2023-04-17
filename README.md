@@ -454,11 +454,16 @@ tabs
 )
 |> Seq.iter(
   fun (table, parquet) ->
+    let thash =
+      table.Value.Schema.ToString()
+      |> Hash.SHA256.sum
+    
     let ppath =
       Path.Combine
         ( "AZURE_DATALAKE_DELTA_PATH"
           |> Environment.GetEnvironmentVariable
         , table.Key.Replace(".", "/")
+        , thash
         , dts.ToString("yyyy-MM-dd")
           |> sprintf "pj_pds=%s"
         )
@@ -556,6 +561,7 @@ tabs
         ( "AZURE_DATALAKE_DELTA_PATH"
           |> Environment.GetEnvironmentVariable
         , table.Key.Replace(".", "/")
+        , thash
         , "_delta_log"
         )
           
@@ -962,6 +968,7 @@ schema
 |> Avro.Schema.toParquetSchema log None env ast
 |> fun (env', ast', es) ->
   if Seq.isEmpty es then
+    let tabs = Parquet.Tables.update log None ast
     let _ =
       use fs =
         new FileStream
@@ -995,9 +1002,12 @@ schema
         fun ts ->
           let fqdn = Parquet.Schema.Ast.Fqdn.toString ts.Key
           let name = fqdn.Replace('.','_')
+          let hash =
+            tabs.[fqdn].Schema.ToString()
+            |> Hash.SHA256.sum
           seq {
             yield
-              ( sprintf "%s [shape=record, label=\"%s|" name fqdn
+              ( sprintf "%s [shape=record, label=\"%s (%s)|" name fqdn hash
               )
             yield
               ( seq {
